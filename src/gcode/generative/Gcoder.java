@@ -110,6 +110,11 @@ public class Gcoder {
 	private void welcome() {
 		System.out.println("##library.name## ##library.prettyVersion## by ##author##");
 	}
+	
+	public void reset() {
+		drawLimitsOnSketch();
+		currentInstructions = "";
+	}
 
 	/**
 	 * return the version of the Library.
