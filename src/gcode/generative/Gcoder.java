@@ -7,6 +7,7 @@ import static processing.core.PApplet.min;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.text.DecimalFormat;
 
 import static processing.core.PApplet.max;
 
@@ -47,6 +48,11 @@ public class Gcoder {
 
 	public float previousX;
 	public float previousY;
+	
+	public float minX;
+	public float maxX;
+	public float minY;
+	public float maxY;
 
 	public float offsetProcessingDrawingX = 30;
 	public float offsetProcessingDrawingY = 80;
@@ -81,6 +87,11 @@ public class Gcoder {
 		canvasWidth = _canvasWidth;
 		canvasHeight = _canvasHeight;
 		speed= 2400;
+		
+		minX = 10000;
+		minY = 10000;
+		maxX = -10000;
+		maxY = -10000;
 
 		welcome();
 		drawLimitsOnSketch();
@@ -362,6 +373,11 @@ public class Gcoder {
 			// return;
 		}
 
+		if(canvasOriginX + x < minX) { minX = canvasOriginX + x; }
+		if(canvasOriginY + y < minY) { minY = canvasOriginY + y; }
+		if(canvasOriginX + x > maxX) { maxX = canvasOriginX + x; }
+		if(canvasOriginY + y > maxY) { maxY = canvasOriginY + y; }
+
 		currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y)
 				+ "\n";
 
@@ -372,7 +388,15 @@ public class Gcoder {
 	}
 
 	public void writeToFile() {
-		File file = new File("D:\\code\\plotterCR10\\" + outputFile + ".gcode");
+		// Show actual size of Printing
+		DecimalFormat decimalFormat = new DecimalFormat("#0");
+		myParent.fill(255,0,0);
+		myParent.text("MinX = " + decimalFormat.format(minX) + " // MaxX = " + decimalFormat.format(maxX) ,
+				offsetProcessingDrawingX + PHYSICALLIMITX + 100, 40);
+		myParent.text("MinY = " + decimalFormat.format(minY) + " // MaxY = " + decimalFormat.format(maxY) ,
+				offsetProcessingDrawingX + PHYSICALLIMITX + 100, 60);
+//		File file = new File("D:\\code\\plotterCR10\\" + outputFile + ".gcode");
+		File file = new File(myParent.sketchPath()+ "\\" + outputFile + ".gcode");
 		try {
 			output = new PrintWriter(file);
 			String initCommands = "G28\n"; // Auto Home
@@ -390,6 +414,16 @@ public class Gcoder {
 
 			output.flush();
 			output.close();
+			System.out.println("Generation of GCODE terminated !\n");
+			System.out.println("MinX = " + Float.toString(minX));
+			System.out.println("MaxX = " + Float.toString(maxX));
+			System.out.println("MinY = " + Float.toString(minY));
+			System.out.println("MaxY = " + Float.toString(maxY));
+			if(minX <= 10 || maxX >= 300 || minY <= 10 || maxY >= 300 ) {
+				System.out.println("///////////////////////////////////////");
+				System.out.println("ATTENTION : risk to draw outside limits");
+				System.out.println("///////////////////////////////////////");
+			}
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
