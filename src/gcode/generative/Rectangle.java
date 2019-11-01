@@ -5,7 +5,6 @@ import gcode.generative.Line;
 
 public class Rectangle {
 	  Line[] lines;
-//	  PApplet myparent;
 	    float minX , maxX, minY, maxY;
 	    Gcoder gcoder;
 

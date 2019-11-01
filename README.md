@@ -52,6 +52,43 @@ g.writeToFile();
 ```
 
 
+## Usage with Geomerative
+
+In order to have the possibility to draw with a virtual "fill", I made this library to use with Geomerative Library for processing. Operations are made on the RShapes in order to know which contour should be drawn or not.
+
+### Basic Usage
+
+```
+// Initialization
+RG.init(this);
+RG.ignoreStyles(true);
+RG.setPolygonizerLength(10);
+RG.setPolygonizer(RG.ADAPTATIVE);
+```
+
+The filled shapes must all be drawn in a RShape:
+
+```
+RShape rfinal;
+rfinal = new RShape();
+```
+
+#### Add Filled Rectangle:
+`rfinal = addFilledShape(rfinal, RShape.createRectangle(20,20,100,100));`
+
+#### Add Filled Ellipse:
+`rfinal = addFilledShape(rfinal, RShape.createEllipse(20,20,100,100));`
+
+
+#### Add Bezier Curve
+a faire
+
+### Usage en 3D
+a faire
+
+To draw the ensemble, and add it to printable GCODE, just do:
+==TODO: changer de nom et integrer a la librairie.
+`drawLines(rfinal);` 
 
 <!-- 
 ### Circles and arcs
