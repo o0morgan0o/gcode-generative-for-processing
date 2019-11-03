@@ -130,10 +130,10 @@ public class Gcoder {
 	}
 	
 	/**
-	 * reset the current the gcode so that all the precedent instructions will be ignored
+	 * reset the current the gcode so that all the precedent instructions will be ignored and redraw the layout.
 	 *
 	 */
-	public void reset() {
+	public void resetAndRedraw() {
 		drawLimitsOnSketch();
 		currentInstructions = "";
 	}
