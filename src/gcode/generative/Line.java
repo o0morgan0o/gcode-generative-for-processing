@@ -9,9 +9,12 @@ public class Line {
 	PVector origin;
 	PVector destination;
 	float minX, minY, maxX, maxY;
+	boolean optimize;
 
-	public Line(Gcoder _gcoder, float _originX, float _originY, float _destinationX, float _destinationY) {
+
+	public Line(Gcoder _gcoder, float _originX, float _originY, float _destinationX, float _destinationY, boolean _optimize) {
 		gcoder = _gcoder;
+		optimize = _optimize;
 		origin = new PVector(_originX, _originY);
 		destination = new PVector(_destinationX, _destinationY);
 		minX = min(_originX, _destinationX);
@@ -19,7 +22,9 @@ public class Line {
 		minY = min(_originY, _destinationY);
 		maxY = max(_originY, _destinationY);
 	}
-
+	public Line(Gcoder _gcoder, float _originX, float _originY, float _destinationX, float _destinationY) {
+		this(_gcoder, _originX, _originY, _destinationX, _destinationY, true); // optimization turned on by default
+	}
 	PVector lowestPoint() {
 		if (origin.y < destination.y) {
 			return origin;
@@ -53,7 +58,7 @@ public class Line {
 	}
 
 	public void draw() {
-		gcoder.drawLine(origin.x, origin.y, destination.x, destination.y);
+		gcoder.drawLine(origin.x, origin.y, destination.x, destination.y, optimize);
 	}
 
 }

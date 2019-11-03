@@ -38,6 +38,8 @@ public class Gcoder {
 
 	//
 	public float amplitudeOnZ;
+	public float additionalLiftOnZ;
+	public float morePushOnZ = 0;
 
 	//
 	public float canvasWidth;
@@ -80,15 +82,17 @@ public class Gcoder {
 	 * @param _canvasHeight the height of the printing sketch
 	 */
 	public Gcoder(PApplet theParent, String _outputFile, float _PHYSICALLIMITX, float _PHYSICALLIMITY,
-			float _amplitudeOnZ, float _canvasOriginX, float _canvasOriginY, float _canvasWidth, float _canvasHeight) {
+			float _amplitudeOnZ, float _additionalLiftOnZ, float _canvasOriginX, float _canvasOriginY, float _canvasWidth, float _canvasHeight) {
 
 		myParent = theParent;
 
 		// initialization of the parameters -----------
+
 		outputFile = _outputFile;
 		PHYSICALLIMITX = _PHYSICALLIMITX;
 		PHYSICALLIMITY = _PHYSICALLIMITY;
 		amplitudeOnZ = _amplitudeOnZ;
+		additionalLiftOnZ = _additionalLiftOnZ;
 		canvasOriginX = _canvasOriginX;
 		canvasOriginY = _canvasOriginY;
 		canvasWidth = _canvasWidth;
@@ -103,6 +107,12 @@ public class Gcoder {
 		welcome();
 		drawLimitsOnSketch();
 	}
+
+	public Gcoder(PApplet theParent, String _outputFile, float _PHYSICALLIMITX, float _PHYSICALLIMITY, float _amplitudeOnZ, float _canvasOriginX, float _canvasOriginY, float _canvasWidth, float _canvasHeight) {
+		// return additionalLiftOnZ = 15 if it is not  specified
+		this(theParent, _outputFile, _PHYSICALLIMITX, _PHYSICALLIMITY, _amplitudeOnZ, (float)15, _canvasOriginX, _canvasOriginY,  _canvasWidth,  _canvasHeight); 
+	}
+
 
 	private void drawLimitsOnSketch() {
 		PFont f = myParent.createFont("Arial", 16, true);
@@ -168,6 +178,23 @@ public class Gcoder {
 	public void setAmplitudeOnZ(float _amplitudeOnZ) {
 		amplitudeOnZ = _amplitudeOnZ;
 	}
+	
+	/**
+	 * Command to add just a little more pression to the pen. In mm, the amplitude of descent is add according to the value i.e. addMorePush(.1) will descent the pen of .1mm more. 
+	 * 
+	 * @param _pushFactor value in mm. Must be between -1 and 1 mm.
+	 */
+	public void addMorePush(float _pushFactor) {
+		if(_pushFactor > 1 ) {
+			System.out.println("Error addMorePush => Far too much pressure, could be dangerous for your printer. please stay between 0 and 1mm. Command ignored \n");
+			return;
+		}
+		if(_pushFactor < -1 ) {
+				System.out.println("Error addMorePush => pushFactor must be >1mm");
+				return;
+		}
+		morePushOnZ = _pushFactor;
+	}
 
 	/**
 	 * Draw a rectangle and create the corresponding gcode
@@ -195,6 +222,8 @@ public class Gcoder {
 //	    }
 	}
 	
+	
+	
 	/**
 	 * Draw a line and create the corresponding gcode
 	 * 
@@ -204,7 +233,19 @@ public class Gcoder {
 	 * @param y2 destination y
 	 */
 	public void drawLine(float x1, float y1, float x2, float y2) {
-		drawLine(x1, y1, x2, y2, true);
+		drawLine(x1, y1, x2, y2, true, true);
+	}
+	/**
+	 * Draw a line and create the corresponding gcode
+	 * 
+	 * @param x1 origin x
+	 * @param y1 origin y
+	 * @param x2 destination x
+	 * @param y2 destination y
+	 * @param optimize it will try to optimize the drawing of the line according to the previous line drawn. Sometimes the logical is not right so set false if results are not like intended.
+	 */
+	public void drawLine(float x1, float y1, float x2, float y2, boolean optimize) {
+		drawLine(x1, y1, x2, y2, true, optimize);
 	}
 
 	/**
@@ -215,8 +256,9 @@ public class Gcoder {
 	 * @param x2 destination x
 	 * @param y2 destination y
 	 * @param applyTransformations if true the rotation and translation will be applied. If false rotation and translation will be ignored.
+	 * @param optimize it will try to optimize the drawing of the line according to the previous line drawn. Sometimes the logical is not right so set false if results are not like intended.
 	 */
-	public void drawLine(float x1, float y1, float x2, float y2, boolean applyTransformations) {
+	public void drawLine(float x1, float y1, float x2, float y2, boolean applyTransformations, boolean optimize) {
 		if(applyTransformations) {
 		// we calculate if we have a rotation in push Matrix
 		float tempX = x1* cos(rotateVar) + y1 * sin(rotateVar);
@@ -248,17 +290,19 @@ public class Gcoder {
 			return;
 		}
 
+		if(optimize) {
 		// calculate the distance previousPoint => x1,y1 and previousPoint => x2,y2 to
 		// choose quickest draw
-		float mag1 = (new PVector(x1 - previousX, y1 - previousY)).mag();
-		float mag2 = (new PVector(x2 - previousX, y2 - previousY)).mag();
-		if (mag1 > mag2) { // we swap the 2 points because it will be quicker to draw
-			float tmpX = x1;
-			float tmpY = y1;
-			x1 = x2;
-			y1 = y2;
-			x2 = tmpX;
-			y2 = tmpY;
+			float mag1 = (new PVector(x1 - previousX, y1 - previousY)).mag();
+			float mag2 = (new PVector(x2 - previousX, y2 - previousY)).mag();
+			if (mag1 > mag2) { // we swap the 2 points because it will be quicker to draw
+				float tmpX = x1;
+				float tmpY = y1;
+				x1 = x2;
+				y1 = y2;
+				x2 = tmpX;
+				y2 = tmpY;
+			}
 		}
 
 		if (x1 <= canvasWidth && y1 <= canvasHeight && x2 <= canvasWidth && y2 <= canvasHeight && x1 >= 0 && y1 >= 0
@@ -332,7 +376,7 @@ public class Gcoder {
 	 * 
 	 */
 	public void elevatePen() {
-		currentInstructions += "G0 Z" + Float.toString(amplitudeOnZ) + "\n";
+		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ  + amplitudeOnZ) + "\n";
 	}
 
 	/**
@@ -340,7 +384,7 @@ public class Gcoder {
 	 * 
 	 */
 	public void lowerPen() {
-		currentInstructions += "G0 Z" + Float.toString(-amplitudeOnZ) + "\n";
+		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ - morePushOnZ) + "\n";
 	}
 	
 	/**
@@ -514,33 +558,74 @@ public class Gcoder {
 		File file = new File(myParent.sketchPath()+ "\\" + outputFile + ".gcode");
 		try {
 			output = new PrintWriter(file);
-			String initCommands = "G28\n"; // Auto Home
-			initCommands += "G90\n";
-			initCommands += "G0 Z4\n"; // move pen up
+			String initCommands= "";
+			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ+ amplitudeOnZ) + "\n"; // additional lift on Z axis
+			initCommands += "G28\n"; // Auto Home
+			initCommands += "G90\n"; // Set absolute positionning
+			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ+ amplitudeOnZ) + "\n"; // additional lift on Z axis
 			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " F" + Float.toString(speed) + "\n";
-			initCommands += "G0 Z-4\n";
+			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ - morePushOnZ) + "\n";
 			output.print(initCommands);
 			output.print("; end of initialization\n");
 			output.print(currentInstructions);
 			output.print("; ending commands\n");
-			String endCommands = "G0 Z4\nG28\n";
+			String endCommands = "";
+			endCommands += "G0 Z" + Float.toString(additionalLiftOnZ+ amplitudeOnZ) + "\n"; // elevatepen last time before returning to originPoint
+			endCommands += "G28\n";
+			endCommands += "M84\n";
 			output.print(endCommands);
 
 			output.flush();
 			output.close();
+
+			System.out.println("-------------------------------\n");
 			System.out.println("Generation of GCODE terminated !\n");
+			System.out.println("Use the -calibration.gcode file to set your pen ! \n");
+			System.out.println("-------------------------------\n");
 			System.out.println("MinX = " + Float.toString(minX));
 			System.out.println("MaxX = " + Float.toString(maxX));
 			System.out.println("MinY = " + Float.toString(minY));
 			System.out.println("MaxY = " + Float.toString(maxY));
+			System.out.println("-------------------------------\n");
 			if(minX <= 10 || maxX >= 300 || minY <= 10 || maxY >= 300 ) {
 				System.out.println("///////////////////////////////////////");
 				System.out.println("ATTENTION : risk to draw outside limits");
 				System.out.println("///////////////////////////////////////");
 			}
+			writeCalibrationGcode();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public void writeCalibrationGcode() {
+		File file = new File(myParent.sketchPath()+ "\\" + outputFile + "-calibration.gcode");
+		try {
+			output = new PrintWriter(file);
+			String initCommands= "";
+			// The calibration file is a gcode file which just draw in the air the limits of the canvas, then go to the origin point at the printing z. So that the pen can be setup at this point.
+			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ+ amplitudeOnZ) + "\n"; // additional lift on Z axis
+			initCommands += "G28\n"; // Auto Home
+			initCommands += "G90\n"; // Set absolute positionning
+			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ+ amplitudeOnZ) + "\n"; // additional lift on Z axis
+			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " F" + Float.toString(speed) + "\n";
+			initCommands += "G1 X" + Float.toString(canvasOriginX + canvasWidth) + " Y" + Float.toString(canvasOriginY) + "\n";
+			initCommands += "G1 X" + Float.toString(canvasOriginX + canvasWidth) + " Y" + Float.toString(canvasOriginY + canvasHeight) + "\n";
+			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY + canvasHeight) + "\n";
+			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + "\n";
+			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ) + "\n";
+			output.print(initCommands);
+			output.print("; Ready for calibration\n");
+			String endCommands = "";
+			endCommands += "M84\n";
+			output.print(endCommands);
+			output.flush();
+			output.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 }
