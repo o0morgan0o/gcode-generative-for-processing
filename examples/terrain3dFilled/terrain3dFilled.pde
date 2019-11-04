@@ -9,7 +9,7 @@ GcodeRectMesh m;
 
 void setup() {
     size(800, 800, P2D);
-    g = new Gcoder(this, "output", 300, 300, 2.5, 110, 35, 180, 255); // valeur ok pour pas taper les pince
+    g = new Gcoder(this, "output", 300, 300, 2.5, 110, 35, 180, 255); 
 
     RG.init(this);
     RG.setPolygonizer(RG.ADAPTATIVE);
@@ -26,14 +26,6 @@ void setup() {
     RPath p = new RPath(points);
     RShape s = new RShape(p);
     s.addClose();
-
-
-    // rfinal = g.addFilledShape(rfinal, s);
-    // 
-    // g.drawRShape(rfinal); // Convert and draw lines to gcode instructions
-    // g.writeToFile(); // write GCode
-
-
 }
 
 
@@ -48,8 +40,7 @@ void draw() {
     for (int i =0 ; i < m.meshsPerHeight; i++){
         for(int j=0; j < m.meshsPerWidth; j++){
             arr[i][j]=1500* noise((float)i/8, (float)j/8);
-            // arr[i][j]=300;
-        }
+          }
     }
     m.updateVertexesModifierZ(arr);
     rfinal = new RShape();
@@ -60,22 +51,14 @@ void draw() {
     canvas.rotateX(0.78147);
     canvas.shape(m.s);
     float aa = map(mouseX, 0, width, 100, 3000);
-    // for ( int i = 0 ; i < m.s.getVertexCount(); i++){
-    // PVector tm = m.s.getVertex(i);
-    // tm.z = noise(i/5) * aa;
-    // m.s.setVertex(i, tm);
- 
-    // }
-   // println(m.s.vertexes[30].z);
+
+
     m.calculate2DProjection();
-    // m.drawQuads();
+  
 
 
-    //il faut recuperer les points et creer une shape rectangle a chaque en commencant par le fond
-    // puis ajouter a rfinal chaque rshape on dessinera la rshape a la fin
     for (int i = m.meshsPerHeight-2; i >=0; i--) {
         println(i);
-    // for (int i = 0; i < m.meshsPerHeight - 1; i++) {
         for (int j = 0; j < m.meshsPerWidth-1 ; j++) {
             int index = j + i * m.meshsPerWidth;
 
@@ -97,17 +80,13 @@ void draw() {
 
 
             rfinal = g.addFilledShape(rfinal, s);
-            // break;
-
         }
     }
     println("FINISHED");
 
 
-    //
     canvas.popMatrix();
     canvas.endDraw();
-
 
     g.drawRShape(rfinal);
 

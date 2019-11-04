@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 
 import static processing.core.PApplet.max;
 
@@ -387,6 +388,14 @@ public class Gcoder {
 		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ - morePushOnZ) + "\n";
 	}
 	
+	public void customInstruction(String instruction, float beginX, float beginY) {
+		elevatePen();
+		movePenTo(beginX, beginY, 0, 0);
+		lowerPen();
+		currentInstructions += instruction;
+		elevatePen();
+	}
+	
 	/**
 	 * pushMatrix()
 	 * 
@@ -526,18 +535,34 @@ public class Gcoder {
 	    }
 	}
 	
-	
+/**
+ * 	
+ * @param r RShape to draw
+ */
 	public void drawRShape(RShape r) {
+		drawRShape(r, .01f);
+	}
+	
+	/**
+	 * 
+	 * @param r
+	 * @param resolution it determines the quality of interpolation better is res il low i.e 0.01 but slower. It is also impacted by the resolution of RG from geomerative.
+	 */
+	public void drawRShape(RShape r, float resolution) {
+	    	// drawing resolution, 0< res <1 better resolution if 
+			// .01 by default
 	    for (int j = 0; j < r.getPointsInPaths().length; j++) {
-	        for (int i = 1; i < r.getPointsInPaths()[j].length - 1; i++) {
-	            RPoint rpointPrev = r.getPointsInPaths()[j][i - 1];
-	            RPoint rpoint = r.getPointsInPaths()[j][i];
+			RPath currentPath = new RPath(r.getPointsInPaths()[j]);
+			RPoint rpointPrev = currentPath.getPoint(0);
+
+	        for (float i = resolution; i <= 1; i+= resolution) {
+	        	RPoint rpoint = currentPath.getPoint(i);
 	            float prevX = rpointPrev.x;
 	            float prevY = rpointPrev.y;
 	            float x = rpoint.x;
 	            float y = rpoint.y;
-	            drawLine(prevX, prevY, x, y);
-
+	            drawLine(prevX, prevY, x, y,false);
+	            rpointPrev = rpoint;
 	        }
 	    }
 	}

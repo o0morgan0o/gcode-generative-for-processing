@@ -3,17 +3,13 @@ import gcode.generative.*;
 
 Gcoder g;
 RShape rfinal;
-PGraphics canvas;
-GcodeRectMesh m;
-
 
 void setup() {
     size(800, 800, P2D);
-	g = new Gcoder(this, "output", 300, 300, 2.5, 110, 35, 180, 255); // valeur ok pour pas taper les pince
+	  g = new Gcoder(this, "output", 300, 300, 2.5, 110, 35, 180, 255); // valeur ok pour pas taper les pince
 
-    RG.init(this);
-    RG.setPolygonizer(RG.ADAPTATIVE);
-    canvas = createGraphics((int) g.canvasWidth, (int)g.canvasHeight, P3D);
+    RG.init(this);  // needed from geomerative library
+    RG.setPolygonizer(RG.ADAPTATIVE);  // see the geomerative documentation for the different renders
 
     rfinal = new RShape();
 
@@ -29,11 +25,10 @@ void setup() {
     s.addClose();
 
 
-    rfinal = g.addFilledShape(rfinal, s);
+    rfinal = g.addFilledShape(rfinal, s); // make the shape a filled Shape
 
     g.drawRShape(rfinal); // Convert and draw lines to gcode instructions
     g.writeToFile(); // write GCode
 
 
 }
-
