@@ -371,6 +371,11 @@ public class Gcoder {
 			}
 		}
 	}
+	
+	public void drawArc(PVector centerPoint, float radius, float angleA, float angleC) {
+		myParent.arc(centerPoint.x, centerPoint.y,  2f * radius , 2f * radius, min(-angleA, -angleC), max(-angleA, -angleC));
+		
+	}
 
 	/**
 	 * Elevate the pen of amplitudeOnZ
@@ -554,8 +559,8 @@ public class Gcoder {
 	    for (int j = 0; j < r.getPointsInPaths().length; j++) {
 			RPath currentPath = new RPath(r.getPointsInPaths()[j]);
 			RPoint rpointPrev = currentPath.getPoint(0);
-
 	        for (float i = resolution; i <= 1; i+= resolution) {
+	        	try {
 	        	RPoint rpoint = currentPath.getPoint(i);
 	            float prevX = rpointPrev.x;
 	            float prevY = rpointPrev.y;
@@ -563,6 +568,11 @@ public class Gcoder {
 	            float y = rpoint.y;
 	            drawLine(prevX, prevY, x, y,false);
 	            rpointPrev = rpoint;
+	        	}catch(Exception e) {
+	        		// Sometimes there is an error if resolution is too low. Don't know yet how to handle it bettre
+					System.out.println("\n ERROR: Problem drawing RShape at " + Float.toString(i));
+	        		
+	        	}
 	        }
 	    }
 	}

@@ -1,6 +1,6 @@
 # Processing GCODE for CR10 pen Plotter
 
-
+_Morgan Thibert -- 2019 -- Library for Processing 3_
 
 ## Main
 
