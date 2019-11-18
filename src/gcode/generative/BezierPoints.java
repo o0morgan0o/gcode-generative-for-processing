@@ -1,4 +1,5 @@
 package gcode.generative;
+
 import java.util.ArrayList;
 import java.lang.Math;
 
@@ -9,92 +10,162 @@ public class BezierPoints {
 	Gcoder gcoder;
 
 	public BezierPoints(PVector pt1, PVector pt2, PVector pt3, PVector pt4, Gcoder _gcoder) {
+		points = new ArrayList<PVector>();
 		points.add(pt1);
 		points.add(pt2);
 		points.add(pt3);
 		points.add(pt4);
-		gcoder= _gcoder;
+		gcoder = _gcoder;
 	}
-	
-	public PVector calculatePolynom(PVector P0, PVector P1, PVector P2 ,PVector P3, double t) {
-		double Px = (float) (Math.pow(1 - t, 3) * P0.x + 3 * Math.pow(1 - t, 2) * t * P1.x + 3 * (1 - t) * Math.pow(t, 2) * P2.x )+ Math.pow(t, 3) * P3.x;
-		double Py = (float) (Math.pow(1 - t, 3) * P0.y + 3 * Math.pow(1 - t, 2) * t * P1.y + 3 * (1 - t) * Math.pow(t, 2) * P2.y + Math.pow(t, 3) * P3.y);
 
-		//strokeWeight(6);
-		//stroke(255);
-		PVector result = new PVector((float)Px,(float) Py);
+	public PVector interpolateBezierPoint(PVector P0, PVector P1, PVector P2, PVector P3, double t) {
+		double Px = (float) (Math.pow(1 - t, 3) * P0.x + 3 * Math.pow(1 - t, 2) * t * P1.x
+				+ 3 * (1 - t) * Math.pow(t, 2) * P2.x) + Math.pow(t, 3) * P3.x;
+		double Py = (float) (Math.pow(1 - t, 3) * P0.y + 3 * Math.pow(1 - t, 2) * t * P1.y
+				+ 3 * (1 - t) * Math.pow(t, 2) * P2.y + Math.pow(t, 3) * P3.y);
+
+		// strokeWeight(6);
+		// stroke(255);
+		PVector result = new PVector((float) Px, (float) Py);
 		return result;
-		
+
 	}
-	
-	public void drawArcFrom3Points(PVector a, PVector b, PVector c) {
-		PVector mpAB = new PVector((float) 0.5 * (b.x + a.x), (float)0.5 * (b.y + a.y));
-		PVector mpBC = new PVector((float) 0.5 * (c.x + b.x), (float)0.5 * (c.y + b.y));
+
+	public void processingDrawBezier() {
+		gcoder.myParent.noFill();
+		gcoder.myParent.stroke(0, 255, 0);
+		gcoder.myParent.pushMatrix();
+		gcoder.myParent.translate(gcoder.offsetProcessingDrawingX + gcoder.canvasOriginX,
+				gcoder.offsetProcessingDrawingY + gcoder.canvasOriginY);
+		gcoder.myParent.beginShape();
+		gcoder.myParent.vertex(points.get(0).x, points.get(0).y);
+		gcoder.myParent.bezierVertex(points.get(1).x, points.get(1).y, points.get(2).x, points.get(2).y,
+				points.get(3).x, points.get(3).y);
+		gcoder.myParent.endShape();
+		gcoder.myParent.stroke(255, 0, 0);
+		gcoder.myParent.strokeWeight(10);
+		gcoder.myParent.point(points.get(0).x, points.get(0).y);
+		gcoder.myParent.point(points.get(1).x, points.get(1).y);
+		gcoder.myParent.point(points.get(2).x, points.get(2).y);
+		gcoder.myParent.point(points.get(3).x, points.get(3).y);
+		gcoder.myParent.popMatrix();
+
+	}
+
+	public void drawArcFrom3Points(PVector a, PVector b, PVector c, boolean isFirstInstruction) {
+		drawArcFrom3Points(a, b, c, isFirstInstruction, false);
+
+	}
+
+	public void drawArcFrom3Points(PVector a, PVector b, PVector c, boolean isFirstInstruction,
+			boolean isLastInstruction) {
+
+		// The formulas are here to find the center of 3 points
+		PVector mpAB = new PVector((float) 0.5 * (b.x + a.x), (float) 0.5 * (b.y + a.y));
+		PVector mpBC = new PVector((float) 0.5 * (c.x + b.x), (float) 0.5 * (c.y + b.y));
 
 		float mAB = (b.y - a.y) / (b.x - a.x);
 		float mBC = (c.y - b.y) / (c.x - b.x);
 
+		float centerX;
+		float centerY;
 		float mPerpAB = -1 / mAB;
 		float mPerpBC = -1 / mBC;
-		if (mPerpAB - mPerpBC == 0) {
-			System.out.println("must draw line");
+
+		if (mAB == 0 && mBC == 0) {
+			gcoder.drawLine(a.x, a.y, b.x, b.y);
+			if (isLastInstruction) {
+				gcoder.drawLine(b.x, b.y, c.x, c.y);
+			}
+			return;
 		}
 
-//		strokeWeight(1);
-		// point(mpAB.x, mpAB.y)
-		// point(mpBC.x, mpBC.y)
+		if (mAB == 0) { // case if AB is an horizontal line
+			centerX = mpAB.x;
+			centerY = -mPerpBC * (centerX - mpBC.x) + mpBC.y;
+		} else if (mBC == 0) { // case if BC is an horizontal line
+			centerX = mpBC.x;
+			centerY = mPerpAB * (centerX - mpAB.x) + mpAB.y;
+		} else {
+			if (mPerpAB - mPerpBC == 0) {
+//				System.out.print("Part to complete , must draw line .................");
+				// if this is 0 it the points are on the same line
+				gcoder.drawLine(a.x, a.y, b.x, b.y);
+				if (isLastInstruction) {
+					gcoder.drawLine(b.x, b.y, c.x, c.y);
+				}
+				return;
+			}
 
-		float centerX = (mpBC.y - mpAB.y + mPerpAB * mpAB.x - mPerpBC * mpBC.x) / (mPerpAB - mPerpBC);
-		float centerY = mPerpAB * (centerX - mpAB.x) + mpAB.y;
+			centerX = (mpBC.y - mpAB.y + mPerpAB * mpAB.x - mPerpBC * mpBC.x) / (mPerpAB - mPerpBC);
+			centerY = mPerpAB * (centerX - mpAB.x) + mpAB.y;
+		}
+
 		PVector centerPoint = new PVector(centerX, centerY);
 
-//		strokeWeight(1);
-		// stroke(255, 0, 0);
-		// point(centerX, centerY)
-
-//		noFill();
-
 		float radius = (float) Math.pow(Math.pow(a.x - centerX, 2) + Math.pow(a.y - centerY, 2), 0.5);
-		// console.log(radius)
-		// radius *= 2
-
-//		ellipse(centerX, centerY, 2 * radius, 2 * radius);
 
 		PVector aa = new PVector(c.x - a.x, c.y - a.y);
 		PVector bb = new PVector(b.x - a.x, b.y - a.y);
-//		line(0, 0, aa.x, aa.y);
-//		line(0, 0, bb.x, bb.y);
-		// let sensRotation = aa.angleBetween(bb)
+
 		float sensRotation = (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
-//		console.log('ROTATION: ', sensRotation);
+		float relativePositionOfCenter = (b.x - a.x) * (centerY - a.y) - (b.y - a.y) * (centerX - a.x);
 
-		// il faut verifier le sens de rotation
+		PVector ref = new PVector(1, 0);
+		PVector centerToA = new PVector(a.x - centerX, a.y - centerY);
+		PVector centerToB = new PVector(b.x - centerX, b.y - centerY);
+		PVector centerToC = new PVector(c.x - centerX, c.y - centerY);
 
-		// str += `G1 X${a.x} Y${a.y} <br>`
-//		gcoder.draw
-//		str += `G${sensRotation >= 0 ? '2' : '3'} X${b.x} Y${b.y} I${centerX - a.x} J${centerY - a.y} <br>`;
-		// console.log(a, b, c);
-		// console.log((c.x - centerX))
-
-		float angleC = (float) Math.acos((c.x - centerX) / radius);
-		if (c.y > centerY) {
-			angleC *= -1;
+		float angleA = (float) (Math.atan2(centerToA.y, centerToA.x) - Math.atan2(ref.y, ref.x));
+		if (angleA < 0) {
+			angleA += 2 * Math.PI;
 		}
-		float angleA = (float) Math.acos((a.x - centerX) / radius);
-		if (a.y > centerY) {
-			angleA *= -1;
+
+		float angleB = (float) (Math.atan2(centerToB.y, centerToB.x) - Math.atan2(ref.y, ref.x));
+		if (angleB < 0) {
+			angleB += 2 * Math.PI;
 		}
-//		console.log(centerX, centerY, angleA, angleC);
-		// line(centerX, centerY, c.x, c.y)
+		float angleC = (float) (Math.atan2(centerToC.y, centerToC.x) - Math.atan2(ref.y, ref.x));
+		if (angleC < 0) {
+			angleC += 2 * Math.PI;
+		}
 
-//		stroke(0, 255, 0);
-//		strokeWeight(1);
+		float arcLengthAB = (float) (Math.atan2(centerToB.y, centerToB.x) - Math.atan2(centerToA.y, centerToA.x));
+		float arcLengthBC = (float) (Math.atan2(centerToC.y, centerToC.x) - Math.atan2(centerToB.y, centerToB.x));
+		float arcLengthCB = (float) (Math.atan2(centerToB.y, centerToB.x) - Math.atan2(centerToC.y, centerToC.x));
 
-		gcoder.drawArc(centerPoint, radius, angleA, angleC);
-//		arc(centerX, centerY, 2 * radius, 2 * radius, min(-angleA, -angleC), max(-angleA, -angleC));
+		gcoder.myParent.println(a, b, c);
+		gcoder.myParent.println(angleA, angleB, angleC, arcLengthAB, arcLengthBC, arcLengthCB);
+
+		if (arcLengthAB < 0) {
+			arcLengthAB += 2 * Math.PI;
+		}
+		if (arcLengthBC < 0) {
+			arcLengthBC += 2 * Math.PI;
+		}
+		if (arcLengthCB < 0) {
+			arcLengthCB += 2 * Math.PI;
+		}
 		
-		
+		if (sensRotation > 0) {
+			arcLengthAB = (float) (2 * Math.PI - arcLengthAB);
+			gcoder.drawArc(centerPoint, a, b, radius, angleB, angleB + arcLengthAB, sensRotation, isFirstInstruction);
+
+			if (isLastInstruction) {
+				gcoder.myParent.println("triggerA", arcLengthAB, arcLengthBC);
+				gcoder.drawArc(centerPoint, a, b, radius, angleC, angleC + arcLengthCB, sensRotation,
+						isFirstInstruction);
+			}
+
+		} else {
+			gcoder.drawArc(centerPoint, a, b, radius, angleA, angleA + arcLengthAB, sensRotation, isFirstInstruction);
+			if (isLastInstruction) {
+				gcoder.myParent.println("triggerB");
+				gcoder.drawArc(centerPoint, a, b, radius, angleB, angleB + arcLengthBC, sensRotation,
+						isFirstInstruction);
+			}
+		}
+
 	}
-
 
 }

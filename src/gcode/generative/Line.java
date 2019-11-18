@@ -22,6 +22,8 @@ public class Line {
 		minY = min(_originY, _destinationY);
 		maxY = max(_originY, _destinationY);
 	}
+	
+	
 	public Line(Gcoder _gcoder, float _originX, float _originY, float _destinationX, float _destinationY) {
 		this(_gcoder, _originX, _originY, _destinationX, _destinationY, true); // optimization turned on by default
 	}

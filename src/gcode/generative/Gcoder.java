@@ -248,6 +248,8 @@ public class Gcoder {
 	public void drawLine(float x1, float y1, float x2, float y2, boolean optimize) {
 		drawLine(x1, y1, x2, y2, true, optimize);
 	}
+	
+//	PVector convertCoordonatesToDrawingArea(float x1, float y1, float x2, float y2)
 
 	/**
 	 * Same as draw line but including the rotation or translation passed before the function is called 
@@ -311,6 +313,7 @@ public class Gcoder {
 			myParent.pushMatrix();
 			myParent.translate(offsetProcessingDrawingX + canvasOriginX, offsetProcessingDrawingY + canvasOriginY);
 			myParent.stroke(0);
+			myParent.strokeWeight(1);
 			myParent.line(x1, y1, x2, y2);
 			myParent.popMatrix();
 			boolean isContinousDraw = false;
@@ -372,8 +375,30 @@ public class Gcoder {
 		}
 	}
 	
-	public void drawArc(PVector centerPoint, float radius, float angleA, float angleC) {
-		myParent.arc(centerPoint.x, centerPoint.y,  2f * radius , 2f * radius, min(-angleA, -angleC), max(-angleA, -angleC));
+	public void drawArc(PVector centerPoint, PVector beginPoint, PVector endPoint,float radius, float angleStart, float angleEnd, float sensRotation, boolean isFirstInstruction) {
+		myParent.stroke(0);
+		myParent.strokeWeight(1);
+//		myParent.arc(centerPoint.x + offsetProcessingDrawingX + canvasOriginX, centerPoint.y +offsetProcessingDrawingY+ canvasOriginY,  2f * radius , 2f * radius, angleA, angleB);
+		myParent.println("input " , angleStart, angleEnd);
+		myParent.arc(centerPoint.x + offsetProcessingDrawingX + canvasOriginX, centerPoint.y +offsetProcessingDrawingY+ canvasOriginY,  2f * radius , 2f * radius, angleStart,angleEnd);
+
+		// traduction en gcode
+		boolean isClockwise = false;
+		if(sensRotation >0) {
+			isClockwise=true;
+		}else if(sensRotation < 0 ) {
+			isClockwise = false;
+		}else {
+			System.out.println("error, can't draw arc, must draw line");
+		}
+		if(isFirstInstruction) {
+			elevatePen();
+			movePenTo(beginPoint.x, beginPoint.y, previousX, previousY);
+			lowerPen();
+		}
+		
+//		isClockwise = true;
+		arcPenInstruction(isClockwise, endPoint.x, endPoint.y, centerPoint.x - beginPoint.x, centerPoint.y - beginPoint.y);
 		
 	}
 
@@ -399,6 +424,28 @@ public class Gcoder {
 		lowerPen();
 		currentInstructions += instruction;
 		elevatePen();
+	}
+	
+	public void arcPenInstruction(boolean isClockwise, float _X, float _Y, float _I, float _J) {
+		int G2orG3;
+		if(isClockwise) {
+			G2orG3 = 2;
+		}else {
+			G2orG3 =3;
+		}
+		//convert instructions to canvas dimensions
+		float X = canvasOriginX + _X;
+		float Y = canvasOriginY + _Y;
+		float I = _I;
+		float J =_J;
+		if(X > PHYSICALLIMITX || X < 0 || Y > PHYSICALLIMITY || Y < 0 ) {
+			System.out.println("EROOR outside limit arc");
+		}
+		myParent.println("command", currentInstructions);
+		currentInstructions+="G" +  Integer.toString(G2orG3) + " X" + Float.toString(X) + " Y" + Float.toString(Y) + " I" + Float.toString(I)+ " J" + Float.toString(J) + " \n";
+		previousX = X;
+		previousY = Y;
+
 	}
 	
 	/**
