@@ -375,12 +375,29 @@ public class Gcoder {
 		}
 	}
 	
-	public void drawArc(PVector centerPoint, PVector beginPoint, PVector endPoint,float radius, float angleStart, float angleEnd, float sensRotation, boolean isFirstInstruction) {
+	public boolean isDrawableArc(PVector beginPoint, PVector endPoint) {
+		//check if point are inside the canvas
+		if(beginPoint.x < 0 || beginPoint.x > canvasWidth || beginPoint.y < 0 || beginPoint.y >canvasHeight){
+			return false;
+		}
+		if(endPoint.x < 0 || endPoint.x > canvasWidth || endPoint.y < 0 || endPoint.y >canvasHeight){
+			return false;
+		}
+		return true;
+	}
+	
+	public void drawArc(PVector centerPoint, PVector beginPoint, PVector endPoint, float sensRotation, boolean isFirstInstruction) {
+		if(!isDrawableArc(beginPoint, endPoint)) { // if the begin or end points are not in the canvas, we draw nothing
+			elevatePen();
+			return;
+		}
+
+		float radius = (float) Math.pow(Math.pow(beginPoint.x - centerPoint.x, 2) + Math.pow(beginPoint.y - centerPoint.y, 2), 0.5);
 		myParent.stroke(0);
 		myParent.strokeWeight(1);
-//		myParent.arc(centerPoint.x + offsetProcessingDrawingX + canvasOriginX, centerPoint.y +offsetProcessingDrawingY+ canvasOriginY,  2f * radius , 2f * radius, angleA, angleB);
-		myParent.println("input " , angleStart, angleEnd);
-		myParent.arc(centerPoint.x + offsetProcessingDrawingX + canvasOriginX, centerPoint.y +offsetProcessingDrawingY+ canvasOriginY,  2f * radius , 2f * radius, angleStart,angleEnd);
+	
+//		myParent.println("input " , beginPoint, endPoint, sensRotation);
+		
 
 		// traduction en gcode
 		boolean isClockwise = false;
@@ -398,7 +415,9 @@ public class Gcoder {
 		}
 		
 //		isClockwise = true;
-		arcPenInstruction(isClockwise, endPoint.x, endPoint.y, centerPoint.x - beginPoint.x, centerPoint.y - beginPoint.y);
+		movePenTo(beginPoint.x, beginPoint.y, previousX, previousY);
+		lowerPen();
+		arcPenInstruction(isClockwise, beginPoint.x, beginPoint.y,endPoint.x, endPoint.y, centerPoint.x - beginPoint.x, centerPoint.y - beginPoint.y);
 		
 	}
 
@@ -426,7 +445,7 @@ public class Gcoder {
 		elevatePen();
 	}
 	
-	public void arcPenInstruction(boolean isClockwise, float _X, float _Y, float _I, float _J) {
+	public void arcPenInstruction(boolean isClockwise, float _beginX, float _beginY, float _X, float _Y, float _I, float _J) {
 		int G2orG3;
 		if(isClockwise) {
 			G2orG3 = 2;
@@ -435,13 +454,16 @@ public class Gcoder {
 		}
 		//convert instructions to canvas dimensions
 		float X = canvasOriginX + _X;
+		float X0 = canvasOriginX + _beginX;
 		float Y = canvasOriginY + _Y;
+		float Y0 = canvasOriginY + _beginY;
 		float I = _I;
 		float J =_J;
 		if(X > PHYSICALLIMITX || X < 0 || Y > PHYSICALLIMITY || Y < 0 ) {
 			System.out.println("EROOR outside limit arc");
 		}
-		myParent.println("command", currentInstructions);
+//		verifyGcodeArcInstruction(G2orG3, X, Y, I, J);
+//		currentInstructions += "G1 X" + Float.toString(X0) + " Y" + Float.toString(Y0) + " \n";
 		currentInstructions+="G" +  Integer.toString(G2orG3) + " X" + Float.toString(X) + " Y" + Float.toString(Y) + " I" + Float.toString(I)+ " J" + Float.toString(J) + " \n";
 		previousX = X;
 		previousY = Y;

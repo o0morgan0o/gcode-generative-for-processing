@@ -19,9 +19,9 @@ public class BezierPoints {
 	}
 
 	public PVector interpolateBezierPoint(PVector P0, PVector P1, PVector P2, PVector P3, double t) {
-		double Px = (float) (Math.pow(1 - t, 3) * P0.x + 3 * Math.pow(1 - t, 2) * t * P1.x
+		double Px = (Math.pow(1 - t, 3) * P0.x + 3 * Math.pow(1 - t, 2) * t * P1.x
 				+ 3 * (1 - t) * Math.pow(t, 2) * P2.x) + Math.pow(t, 3) * P3.x;
-		double Py = (float) (Math.pow(1 - t, 3) * P0.y + 3 * Math.pow(1 - t, 2) * t * P1.y
+		double Py = (Math.pow(1 - t, 3) * P0.y + 3 * Math.pow(1 - t, 2) * t * P1.y
 				+ 3 * (1 - t) * Math.pow(t, 2) * P2.y + Math.pow(t, 3) * P3.y);
 
 		// strokeWeight(6);
@@ -109,62 +109,37 @@ public class BezierPoints {
 		PVector bb = new PVector(b.x - a.x, b.y - a.y);
 
 		float sensRotation = (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
-		float relativePositionOfCenter = (b.x - a.x) * (centerY - a.y) - (b.y - a.y) * (centerX - a.x);
 
-		PVector ref = new PVector(1, 0);
-		PVector centerToA = new PVector(a.x - centerX, a.y - centerY);
-		PVector centerToB = new PVector(b.x - centerX, b.y - centerY);
-		PVector centerToC = new PVector(c.x - centerX, c.y - centerY);
 
-		float angleA = (float) (Math.atan2(centerToA.y, centerToA.x) - Math.atan2(ref.y, ref.x));
-		if (angleA < 0) {
-			angleA += 2 * Math.PI;
+//		gcoder.myParent.println(a, b, c);
+//		gcoder.myParent.println(angleA, angleB, angleC, arcLengthAB, arcLengthBC, arcLengthCB);
+
+		gcoder.drawArc(centerPoint, a,b, sensRotation, isFirstInstruction);
+		if(isLastInstruction) {
+		gcoder.drawArc(centerPoint, b,c, sensRotation, isFirstInstruction);
+			
 		}
 
-		float angleB = (float) (Math.atan2(centerToB.y, centerToB.x) - Math.atan2(ref.y, ref.x));
-		if (angleB < 0) {
-			angleB += 2 * Math.PI;
-		}
-		float angleC = (float) (Math.atan2(centerToC.y, centerToC.x) - Math.atan2(ref.y, ref.x));
-		if (angleC < 0) {
-			angleC += 2 * Math.PI;
-		}
 
-		float arcLengthAB = (float) (Math.atan2(centerToB.y, centerToB.x) - Math.atan2(centerToA.y, centerToA.x));
-		float arcLengthBC = (float) (Math.atan2(centerToC.y, centerToC.x) - Math.atan2(centerToB.y, centerToB.x));
-		float arcLengthCB = (float) (Math.atan2(centerToB.y, centerToB.x) - Math.atan2(centerToC.y, centerToC.x));
-
-		gcoder.myParent.println(a, b, c);
-		gcoder.myParent.println(angleA, angleB, angleC, arcLengthAB, arcLengthBC, arcLengthCB);
-
-		if (arcLengthAB < 0) {
-			arcLengthAB += 2 * Math.PI;
-		}
-		if (arcLengthBC < 0) {
-			arcLengthBC += 2 * Math.PI;
-		}
-		if (arcLengthCB < 0) {
-			arcLengthCB += 2 * Math.PI;
-		}
 		
-		if (sensRotation > 0) {
-			arcLengthAB = (float) (2 * Math.PI - arcLengthAB);
-			gcoder.drawArc(centerPoint, a, b, radius, angleB, angleB + arcLengthAB, sensRotation, isFirstInstruction);
-
-			if (isLastInstruction) {
-				gcoder.myParent.println("triggerA", arcLengthAB, arcLengthBC);
-				gcoder.drawArc(centerPoint, a, b, radius, angleC, angleC + arcLengthCB, sensRotation,
-						isFirstInstruction);
-			}
-
-		} else {
-			gcoder.drawArc(centerPoint, a, b, radius, angleA, angleA + arcLengthAB, sensRotation, isFirstInstruction);
-			if (isLastInstruction) {
-				gcoder.myParent.println("triggerB");
-				gcoder.drawArc(centerPoint, a, b, radius, angleB, angleB + arcLengthBC, sensRotation,
-						isFirstInstruction);
-			}
-		}
+//		if (sensRotation > 0) {
+//			arcLengthAB = (float) (2 * Math.PI - arcLengthAB);
+//			gcoder.drawArc(centerPoint, a, b, radius, angleB, angleB + arcLengthAB, sensRotation, isFirstInstruction);
+//
+//			if (isLastInstruction) {
+//				gcoder.myParent.println("triggerA", arcLengthAB, arcLengthBC);
+//				gcoder.drawArc(centerPoint, a, b, radius, angleC, angleC + arcLengthCB, sensRotation,
+//						isFirstInstruction);
+//			}
+//
+//		} else {
+//			gcoder.drawArc(centerPoint, a, b, radius, angleA, angleA + arcLengthAB, sensRotation, isFirstInstruction);
+//			if (isLastInstruction) {
+//				gcoder.myParent.println("triggerB");
+//				gcoder.drawArc(centerPoint, a, b, radius, angleB, angleB + arcLengthBC, sensRotation,
+//						isFirstInstruction);
+//			}
+//		}
 
 	}
 

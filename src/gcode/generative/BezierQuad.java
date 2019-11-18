@@ -48,8 +48,8 @@ public class BezierQuad {
 			PVector currentPrevPrevPoint = bezierPoint.interpolateBezierPoint(currentControlPoints.get(0),
 					currentControlPoints.get(1), currentControlPoints.get(2), currentControlPoints.get(3), (double) 0);
 			int count = 0;
-			for (double j = 2.0 * resolution; j < 1.0; j += resolution) {
-				gcoder.myParent.println(j);
+			for (double j = 2.0 * resolution; j < 1.0 - resolution; j += resolution) {
+//				gcoder.myParent.println(j);
 				// here we must get 3 interpolated points in order to draw arc
 				PVector currentPoint = bezierPoint.interpolateBezierPoint(currentControlPoints.get(0),
 						currentControlPoints.get(1), currentControlPoints.get(2), currentControlPoints.get(3),
