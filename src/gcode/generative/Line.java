@@ -12,6 +12,15 @@ public class Line {
 	boolean optimize;
 
 
+	/**
+	 * 
+	 * @param _gcoder
+	 * @param _originX
+	 * @param _originY
+	 * @param _destinationX
+	 * @param _destinationY
+	 * @param _optimize
+	 */
 	public Line(Gcoder _gcoder, float _originX, float _originY, float _destinationX, float _destinationY, boolean _optimize) {
 		gcoder = _gcoder;
 		optimize = _optimize;
@@ -23,7 +32,14 @@ public class Line {
 		maxY = max(_originY, _destinationY);
 	}
 	
-	
+/**
+ * 	
+ * @param _gcoder
+ * @param _originX
+ * @param _originY
+ * @param _destinationX
+ * @param _destinationY
+ */
 	public Line(Gcoder _gcoder, float _originX, float _originY, float _destinationX, float _destinationY) {
 		this(_gcoder, _originX, _originY, _destinationX, _destinationY, true); // optimization turned on by default
 	}
@@ -35,6 +51,10 @@ public class Line {
 		}
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	PVector uppestPoint() {
 		if (origin.y < destination.y) {
 			return destination;
@@ -43,6 +63,10 @@ public class Line {
 		}
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	PVector leftestPoint() {
 		if (origin.x < destination.x) {
 			return origin;
@@ -51,6 +75,10 @@ public class Line {
 		}
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	PVector rightestPoint() {
 		if (origin.x < destination.x) {
 			return destination;
@@ -59,6 +87,9 @@ public class Line {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	public void draw() {
 		gcoder.drawLine(origin.x, origin.y, destination.x, destination.y, optimize);
 	}

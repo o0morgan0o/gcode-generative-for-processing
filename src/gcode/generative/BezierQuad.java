@@ -10,8 +10,19 @@ public class BezierQuad {
 	double resolution; // quality of interpolation of the bezier curve. must be between 0 and 1. 0.1 or
 	public BezierPoints lastBezierPoint;
 	public PVector lastPoint;
-						// 0.01 are OK
+	public boolean showControlPoints = false;
+	// 0.01 are OK
+	
 
+	/**
+	 * 
+	 * @param _gcoder
+	 * @param pt1
+	 * @param pt2
+	 * @param pt3
+	 * @param pt4
+	 * @param _resolution
+	 */
 	public BezierQuad(Gcoder _gcoder, PVector pt1, PVector pt2, PVector pt3, PVector pt4, double _resolution) {
 		gcoder = _gcoder;
 		points = new ArrayList<BezierPoints>();
@@ -19,68 +30,97 @@ public class BezierQuad {
 		points.add(origin);
 		resolution = _resolution;
 
-		lastBezierPoint= points.get(points.size()-1);
-		lastPoint= lastBezierPoint.points.get(3);
-
-
-
+		lastBezierPoint = points.get(points.size() - 1);
+		lastPoint = lastBezierPoint.points.get(3);
 	}
-//	public BezierQuad(Gcoder _gcoder, PVector pt1, PVector pt2, PVector pt3, PVector pt4) {
-//		this(_gcoder,pt1,pt2,pt3,pt4,.1);
-//	}
 
+	/**
+	 * 
+	 * @param _gcoder
+	 * @param pt1
+	 * @param ctrlPt1X
+	 * @param ctrlPt1Y
+	 * @param pt4
+	 * @param ctrlPt4X
+	 * @param ctrlPt4Y
+	 * @param _resolution
+	 */
+	public BezierQuad(Gcoder _gcoder, float[] pt1, float ctrlPt1X, float ctrlPt1Y, float[] pt4, float ctrlPt4X,
+			float ctrlPt4Y, double _resolution) {
+		this(_gcoder, new PVector(pt1[0], pt1[1]), new PVector(pt1[0] + ctrlPt1X, pt1[1] + ctrlPt1Y),
+				new PVector(pt4[0] + ctrlPt4X, pt4[1] + ctrlPt4Y), new PVector(pt4[0], pt4[1]), _resolution);
+	}
+
+
+	/**
+	 * 
+	 * @param endPoint
+	 * @param ctrlPtX
+	 * @param ctrlPtY
+	 */
+	public void addPoint(float[] endPoint, float ctrlPtX, float ctrlPtY) {
+		addPoint(new PVector(endPoint[0] + ctrlPtX, endPoint[1] + ctrlPtY), new PVector(endPoint[0], endPoint[1]));
+	}
+
+	
+	/**
+	 * 
+	 * @param pt1
+	 * @param pt2
+	 * @param pt3
+	 * @param pt4
+	 */
 	public void addPoint(PVector pt1, PVector pt2, PVector pt3, PVector pt4) {
 		BezierPoints newPoint = new BezierPoints(pt1, pt2, pt3, pt4, gcoder);
 		points.add(newPoint);
-		lastBezierPoint= points.get(points.size()-1);
-		lastPoint= lastBezierPoint.points.get(3);
+		lastBezierPoint = points.get(points.size() - 1);
+		lastPoint = lastBezierPoint.points.get(3);
 
 	}
-	public void addPoint(PVector pt3, PVector pt4) {
-		// method to add point to the bezier curve. We need only 2 control points because the first and second are the points of the precedent curve
-		
-		// get the points of the previous segment quad
-		BezierPoints prevSegment = points.get(points.size()-1);
-		PVector prevP4 = prevSegment.points.get(3);
-//		PVector tmpP1 = new PVector(80,20);
-//		PVector tmpP2 = points.get(points.size() - 1).points.get(points.size()-2);
-		// tmpP2 is the mirror of 3rd control point of previous segment.
 
+	/**
+	 * 
+	 * @param pt3
+	 * @param pt4
+	 */
+	public void addPoint(PVector pt3, PVector pt4) {
+		// method to add point to the bezier curve. We need only 2 control points
+		// because the first and second are the points of the precedent curve
+
+		// get the points of the previous segment quad
+		BezierPoints prevSegment = points.get(points.size() - 1);
+		PVector prevP4 = prevSegment.points.get(3);
 		PVector prevP3 = prevSegment.points.get(2);
 
 		float distX = prevP4.x - prevP3.x;
 		float distY = prevP4.y - prevP3.y;
 
-		PVector tmpP2 = new PVector(prevP4.x + distX, prevP4.y+distY);
-//		PVector tmpP2 = new PVector(120, 28);
-		addPoint(prevP4,tmpP2, pt3,pt4);
-//		BezierPoints newPoint = new BezierPoints(tmpP1, tmpP2, pt3, pt4, gcoder);
-//		points.add(newPoint);
+		PVector tmpP2 = new PVector(prevP4.x + distX, prevP4.y + distY);
+		addPoint(prevP4, tmpP2, pt3, pt4);
 
 	}
 
+	
+	/**
+	 * 
+	 */
 	public void draw() {
 		BezierPoints bezierPoint;
-		System.out.println("drawBezier");
+		System.out.println("drawing a Bezier line ...");
 
-//		gcoder.elevatePen();
-//		gcoder.movePen
 		boolean isFirstInstruction = true;
 		for (int i = 0; i < points.size(); i++) {
 			boolean isLastInstruction = false; // necessaire pour finir l'arc lorsqu'on fait le dernier point
 			bezierPoint = points.get(i);
-			bezierPoint.processingDrawBezier();
+			bezierPoint.processingDrawBezier(showControlPoints);
 			ArrayList<PVector> currentControlPoints = bezierPoint.points;
 
-//				//PVector currentPoint = bezierPoint.interpolateBezierPoint(currentControlPoints.get(0), currentControlPoints.get(1), currentControlPoints.get(2), currentControlPoints.get(3), (double) 0 + 2 * resolution);
 			PVector currentPrevPoint = bezierPoint.interpolateBezierPoint(currentControlPoints.get(0),
 					currentControlPoints.get(1), currentControlPoints.get(2), currentControlPoints.get(3),
 					(double) 0 + resolution);
 			PVector currentPrevPrevPoint = bezierPoint.interpolateBezierPoint(currentControlPoints.get(0),
 					currentControlPoints.get(1), currentControlPoints.get(2), currentControlPoints.get(3), (double) 0);
-			int count = 0;
 			for (double j = 2.0 * resolution; j < 1.0 - resolution; j += resolution) {
-//				gcoder.myParent.println(j);
 				// here we must get 3 interpolated points in order to draw arc
 				PVector currentPoint = bezierPoint.interpolateBezierPoint(currentControlPoints.get(0),
 						currentControlPoints.get(1), currentControlPoints.get(2), currentControlPoints.get(3),
@@ -91,16 +131,9 @@ public class BezierQuad {
 				currentPrevPoint = currentPoint;
 				isFirstInstruction = false;
 
-				if (count == 5) {
-//					break;
-				}
-				count++;
-
 			}
 			isLastInstruction = true;
 //			 for approximation raisons we make sure we draw the last point
-//				gcoder.myParent.println("trigger last point");
-//				gcoder.myParent.println(currentPoint.x, currentPoint.y);
 			PVector currentPoint = bezierPoint.interpolateBezierPoint(currentControlPoints.get(0),
 					currentControlPoints.get(1), currentControlPoints.get(2), currentControlPoints.get(3), 1);
 			bezierPoint.drawArcFrom3Points(currentPrevPrevPoint, currentPrevPoint, currentPoint, isFirstInstruction,

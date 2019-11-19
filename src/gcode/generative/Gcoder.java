@@ -52,7 +52,7 @@ public class Gcoder {
 
 	public float previousX;
 	public float previousY;
-	
+
 	public float minX;
 	public float maxX;
 	public float minY;
@@ -61,7 +61,7 @@ public class Gcoder {
 	public float offsetProcessingDrawingX = 30;
 	public float offsetProcessingDrawingY = 80;
 	public float speed;
-	
+
 	public float translateVarX = 0;
 	public float translateVarY = 0;
 	public float rotateVar = 0;
@@ -72,18 +72,22 @@ public class Gcoder {
 	/**
 	 * The constructor for initialization of the library.
 	 * 
-	 * @param theParent the parent PApplet
-	 * @param _outputFile the output file of the generated gcode
-	 * @param _PHYSICALLIMITX the physical maximum x of the printer ( = 300 mm for the CR10)
-	 * @param _PHYSICALLIMITY the physical maximum y of the printer ( = 300 mm for the CR10)
-	 * @param _amplitudeOnZ the z amplitude during the elevation or the descent of the pen
-	 * @param _canvasOriginX the origin X of the sketch on the printer 
-	 * @param _canvasOriginY the origin Y of the sketch on the printer 
-	 * @param _canvasWidth the width of the printing sketch
-	 * @param _canvasHeight the height of the printing sketch
+	 * @param theParent       the parent PApplet
+	 * @param _outputFile     the output file of the generated gcode
+	 * @param _PHYSICALLIMITX the physical maximum x of the printer ( = 300 mm for
+	 *                        the CR10)
+	 * @param _PHYSICALLIMITY the physical maximum y of the printer ( = 300 mm for
+	 *                        the CR10)
+	 * @param _amplitudeOnZ   the z amplitude during the elevation or the descent of
+	 *                        the pen
+	 * @param _canvasOriginX  the origin X of the sketch on the printer
+	 * @param _canvasOriginY  the origin Y of the sketch on the printer
+	 * @param _canvasWidth    the width of the printing sketch
+	 * @param _canvasHeight   the height of the printing sketch
 	 */
 	public Gcoder(PApplet theParent, String _outputFile, float _PHYSICALLIMITX, float _PHYSICALLIMITY,
-			float _amplitudeOnZ, float _additionalLiftOnZ, float _canvasOriginX, float _canvasOriginY, float _canvasWidth, float _canvasHeight) {
+			float _amplitudeOnZ, float _additionalLiftOnZ, float _canvasOriginX, float _canvasOriginY,
+			float _canvasWidth, float _canvasHeight) {
 
 		myParent = theParent;
 
@@ -98,8 +102,8 @@ public class Gcoder {
 		canvasOriginY = _canvasOriginY;
 		canvasWidth = _canvasWidth;
 		canvasHeight = _canvasHeight;
-		speed= 2400;
-		
+		speed = 2400;
+
 		minX = 10000;
 		minY = 10000;
 		maxX = -10000;
@@ -109,12 +113,28 @@ public class Gcoder {
 		drawLimitsOnSketch();
 	}
 
-	public Gcoder(PApplet theParent, String _outputFile, float _PHYSICALLIMITX, float _PHYSICALLIMITY, float _amplitudeOnZ, float _canvasOriginX, float _canvasOriginY, float _canvasWidth, float _canvasHeight) {
-		// return additionalLiftOnZ = 15 if it is not  specified
-		this(theParent, _outputFile, _PHYSICALLIMITX, _PHYSICALLIMITY, _amplitudeOnZ, (float)15, _canvasOriginX, _canvasOriginY,  _canvasWidth,  _canvasHeight); 
+	/**
+	 * 
+	 * @param theParent
+	 * @param _outputFile
+	 * @param _PHYSICALLIMITX
+	 * @param _PHYSICALLIMITY
+	 * @param _amplitudeOnZ
+	 * @param _canvasOriginX
+	 * @param _canvasOriginY
+	 * @param _canvasWidth
+	 * @param _canvasHeight
+	 */
+	public Gcoder(PApplet theParent, String _outputFile, float _PHYSICALLIMITX, float _PHYSICALLIMITY,
+			float _amplitudeOnZ, float _canvasOriginX, float _canvasOriginY, float _canvasWidth, float _canvasHeight) {
+		// return additionalLiftOnZ = 15 if it is not specified
+		this(theParent, _outputFile, _PHYSICALLIMITX, _PHYSICALLIMITY, _amplitudeOnZ, (float) 15, _canvasOriginX,
+				_canvasOriginY, _canvasWidth, _canvasHeight);
 	}
 
-
+	/**
+	 * 
+	 */
 	private void drawLimitsOnSketch() {
 		PFont f = myParent.createFont("Arial", 16, true);
 		myParent.textFont(f);
@@ -139,9 +159,10 @@ public class Gcoder {
 	private void welcome() {
 		System.out.println("##library.name## ##library.prettyVersion## by ##author##");
 	}
-	
+
 	/**
-	 * reset the current the gcode so that all the precedent instructions will be ignored and redraw the layout.
+	 * reset the current the gcode so that all the precedent instructions will be
+	 * ignored and redraw the layout.
 	 *
 	 */
 	public void resetAndRedraw() {
@@ -163,36 +184,40 @@ public class Gcoder {
 //	}
 
 	/**
-	 * change the moving speed for the next instructions 
+	 * change the moving speed for the next instructions
 	 * 
 	 * @param _speed the new speed in mm/min
 	 */
 	public void setSpeed(float _speed) {
-		speed= _speed;
+		speed = _speed;
 	}
-	
+
 	/**
-	 * change the amplitude of displacement on z axis for the elevation or descent of the pen
+	 * change the amplitude of displacement on z axis for the elevation or descent
+	 * of the pen
 	 * 
 	 * @param _amplitudeOnZ the new amplitude in mm
 	 */
 	public void setAmplitudeOnZ(float _amplitudeOnZ) {
 		amplitudeOnZ = _amplitudeOnZ;
 	}
-	
+
 	/**
-	 * Command to add just a little more pression to the pen. In mm, the amplitude of descent is add according to the value i.e. addMorePush(.1) will descent the pen of .1mm more. 
+	 * Command to add just a little more pression to the pen. In mm, the amplitude
+	 * of descent is add according to the value i.e. addMorePush(.1) will descent
+	 * the pen of .1mm more.
 	 * 
 	 * @param _pushFactor value in mm. Must be between -1 and 1 mm.
 	 */
 	public void addMorePush(float _pushFactor) {
-		if(_pushFactor > 1 ) {
-			System.out.println("Error addMorePush => Far too much pressure, could be dangerous for your printer. please stay between 0 and 1mm. Command ignored \n");
+		if (_pushFactor > 1) {
+			System.out.println(
+					"Error addMorePush => Far too much pressure, could be dangerous for your printer. please stay between 0 and 1mm. Command ignored \n");
 			return;
 		}
-		if(_pushFactor < -1 ) {
-				System.out.println("Error addMorePush => pushFactor must be >1mm");
-				return;
+		if (_pushFactor < -1) {
+			System.out.println("Error addMorePush => pushFactor must be >1mm");
+			return;
 		}
 		morePushOnZ = _pushFactor;
 	}
@@ -222,9 +247,7 @@ public class Gcoder {
 //
 //	    }
 	}
-	
-	
-	
+
 	/**
 	 * Draw a line and create the corresponding gcode
 	 * 
@@ -236,66 +259,75 @@ public class Gcoder {
 	public void drawLine(float x1, float y1, float x2, float y2) {
 		drawLine(x1, y1, x2, y2, true, true);
 	}
+
 	/**
 	 * Draw a line and create the corresponding gcode
 	 * 
-	 * @param x1 origin x
-	 * @param y1 origin y
-	 * @param x2 destination x
-	 * @param y2 destination y
-	 * @param optimize it will try to optimize the drawing of the line according to the previous line drawn. Sometimes the logical is not right so set false if results are not like intended.
+	 * @param x1       origin x
+	 * @param y1       origin y
+	 * @param x2       destination x
+	 * @param y2       destination y
+	 * @param optimize it will try to optimize the drawing of the line according to
+	 *                 the previous line drawn. Sometimes the logical is not right
+	 *                 so set false if results are not like intended.
 	 */
 	public void drawLine(float x1, float y1, float x2, float y2, boolean optimize) {
 		drawLine(x1, y1, x2, y2, true, optimize);
 	}
-	
+
 //	PVector convertCoordonatesToDrawingArea(float x1, float y1, float x2, float y2)
 
 	/**
-	 * Same as draw line but including the rotation or translation passed before the function is called 
+	 * Same as draw line but including the rotation or translation passed before the
+	 * function is called
 	 * 
-	 * @param x1 origin x
-	 * @param y1 origin y
-	 * @param x2 destination x
-	 * @param y2 destination y
-	 * @param applyTransformations if true the rotation and translation will be applied. If false rotation and translation will be ignored.
-	 * @param optimize it will try to optimize the drawing of the line according to the previous line drawn. Sometimes the logical is not right so set false if results are not like intended.
+	 * @param x1                   origin x
+	 * @param y1                   origin y
+	 * @param x2                   destination x
+	 * @param y2                   destination y
+	 * @param applyTransformations if true the rotation and translation will be
+	 *                             applied. If false rotation and translation will
+	 *                             be ignored.
+	 * @param optimize             it will try to optimize the drawing of the line
+	 *                             according to the previous line drawn. Sometimes
+	 *                             the logical is not right so set false if results
+	 *                             are not like intended.
 	 */
 	public void drawLine(float x1, float y1, float x2, float y2, boolean applyTransformations, boolean optimize) {
-		if(applyTransformations) {
-		// we calculate if we have a rotation in push Matrix
-		float tempX = x1* cos(rotateVar) + y1 * sin(rotateVar);
-		float tempY = -x1 * sin(rotateVar) + y1 * cos(rotateVar);
-		x1 = tempX;
-		y1 = tempY;
-		
-		tempX = x2 * cos(rotateVar) + y2 * sin(rotateVar);
-		tempY = -x2 * sin(rotateVar) + y2 * cos(rotateVar);
-		x2 = tempX;
-		y2 = tempY;
-		//first we adapt if we made a pushMatrix =>
-		x1 += translateVarX;
-		x2 += translateVarX;
-		y1 += translateVarY;
-		y2 += translateVarY;
+		if (applyTransformations) {
+			// we calculate if we have a rotation in push Matrix
+			float tempX = x1 * cos(rotateVar) + y1 * sin(rotateVar);
+			float tempY = -x1 * sin(rotateVar) + y1 * cos(rotateVar);
+			x1 = tempX;
+			y1 = tempY;
+
+			tempX = x2 * cos(rotateVar) + y2 * sin(rotateVar);
+			tempY = -x2 * sin(rotateVar) + y2 * cos(rotateVar);
+			x2 = tempX;
+			y2 = tempY;
+			// first we adapt if we made a pushMatrix =>
+			x1 += translateVarX;
+			x2 += translateVarX;
+			y1 += translateVarY;
+			y2 += translateVarY;
 		}
-		
-		//DEBUG ////////////////////////
+
+		// DEBUG ////////////////////////
 //		System.out.println("New point //");
 //		System.out.println(x1);
 //		System.out.println(x2);
 //		System.out.println(y1);
 //		System.out.println(y2);
 		// ////////////////////////////
-		
+
 		// check if the 2 points are included in the canvas. if not, we return nothing
 		if (max(x1, x2) < 0 || min(x1, x2) > canvasWidth || max(y1, y2) < 0 || min(y1, y2) > canvasHeight) {
 			return;
 		}
 
-		if(optimize) {
-		// calculate the distance previousPoint => x1,y1 and previousPoint => x2,y2 to
-		// choose quickest draw
+		if (optimize) {
+			// calculate the distance previousPoint => x1,y1 and previousPoint => x2,y2 to
+			// choose quickest draw
 			float mag1 = (new PVector(x1 - previousX, y1 - previousY)).mag();
 			float mag2 = (new PVector(x2 - previousX, y2 - previousY)).mag();
 			if (mag1 > mag2) { // we swap the 2 points because it will be quicker to draw
@@ -374,63 +406,63 @@ public class Gcoder {
 			}
 		}
 	}
+
 	
 	public boolean isDrawableArc(PVector beginPoint, PVector endPoint, PVector centerPoint, float sensRotation) {
-		//check if point are inside the canvas
+		// check if point are inside the canvas
 		boolean isBeginPointIn = true;
 		boolean isEndPointIn = true;
-		if(beginPoint.x < 0 || beginPoint.x > canvasWidth || beginPoint.y < 0 || beginPoint.y >canvasHeight){
+		if (beginPoint.x < 0 || beginPoint.x > canvasWidth || beginPoint.y < 0 || beginPoint.y > canvasHeight) {
 			isBeginPointIn = false;
 		}
-		if(endPoint.x < 0 || endPoint.x > canvasWidth || endPoint.y < 0 || endPoint.y >canvasHeight){
-			isEndPointIn =false;
+		if (endPoint.x < 0 || endPoint.x > canvasWidth || endPoint.y < 0 || endPoint.y > canvasHeight) {
+			isEndPointIn = false;
 		}
-		if(!isBeginPointIn && !isEndPointIn) {
+		if (!isBeginPointIn && !isEndPointIn) {
 			elevatePen();
 			return false;
-		}else if(isBeginPointIn && !isEndPointIn) {
-				drawLine(beginPoint.x, beginPoint.y, endPoint.x, endPoint.y, false);
-				return false;
-		}else if(isEndPointIn && !isBeginPointIn) {
-				drawLine(endPoint.x, endPoint.y, beginPoint.x, beginPoint.y, false);
-				return false;
+		} else if (isBeginPointIn && !isEndPointIn) {
+			drawLine(beginPoint.x, beginPoint.y, endPoint.x, endPoint.y, false);
+			return false;
+		} else if (isEndPointIn && !isBeginPointIn) {
+			drawLine(endPoint.x, endPoint.y, beginPoint.x, beginPoint.y, false);
+			return false;
 		}
-		
+
 		return true;
 	}
+
 	
-	public void drawArc(PVector centerPoint, PVector beginPoint, PVector endPoint, float sensRotation, boolean isFirstInstruction) {
-		if(!isDrawableArc(beginPoint, endPoint,centerPoint, sensRotation)) { // if the begin or end points are not in the canvas, we draw nothing
+	public void drawArc(PVector centerPoint, PVector beginPoint, PVector endPoint, float sensRotation,
+			boolean isFirstInstruction) {
+		if (!isDrawableArc(beginPoint, endPoint, centerPoint, sensRotation)) { // if the begin or end points are not in
+																				// the canvas, we draw nothing
 			return;
 		}
 
-		float radius = (float) Math.pow(Math.pow(beginPoint.x - centerPoint.x, 2) + Math.pow(beginPoint.y - centerPoint.y, 2), 0.5);
+		float radius = (float) Math
+				.pow(Math.pow(beginPoint.x - centerPoint.x, 2) + Math.pow(beginPoint.y - centerPoint.y, 2), 0.5);
 		myParent.stroke(0);
 		myParent.strokeWeight(1);
-	
-//		myParent.println("input " , beginPoint, endPoint, sensRotation);
-		
 
 		// traduction en gcode
 		boolean isClockwise = false;
-		if(sensRotation >0) {
-			isClockwise=true;
-		}else if(sensRotation < 0 ) {
+		if (sensRotation > 0) {
+			isClockwise = true;
+		} else if (sensRotation < 0) {
 			isClockwise = false;
-		}else {
+		} else {
 			System.out.println("error, can't draw arc, must draw line");
 		}
-		if(isFirstInstruction) {
+		if (isFirstInstruction) {
 			elevatePen();
 			movePenTo(beginPoint.x, beginPoint.y, previousX, previousY);
 			lowerPen();
 		}
-		
-//		isClockwise = true;
 		movePenTo(beginPoint.x, beginPoint.y, previousX, previousY);
 		lowerPen();
-		arcPenInstruction(isClockwise, beginPoint.x, beginPoint.y,endPoint.x, endPoint.y, centerPoint.x - beginPoint.x, centerPoint.y - beginPoint.y);
-		
+		arcPenInstruction(isClockwise, beginPoint.x, beginPoint.y, endPoint.x, endPoint.y, centerPoint.x - beginPoint.x,
+				centerPoint.y - beginPoint.y);
 	}
 
 	/**
@@ -438,7 +470,7 @@ public class Gcoder {
 	 * 
 	 */
 	public void elevatePen() {
-		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ  + amplitudeOnZ) + "\n";
+		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n";
 	}
 
 	/**
@@ -448,7 +480,13 @@ public class Gcoder {
 	public void lowerPen() {
 		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ - morePushOnZ) + "\n";
 	}
-	
+
+	/**
+	 * 
+	 * @param instruction
+	 * @param beginX
+	 * @param beginY
+	 */
 	public void customInstruction(String instruction, float beginX, float beginY) {
 		elevatePen();
 		movePenTo(beginX, beginY, 0, 0);
@@ -456,32 +494,44 @@ public class Gcoder {
 		currentInstructions += instruction;
 		elevatePen();
 	}
-	
-	public void arcPenInstruction(boolean isClockwise, float _beginX, float _beginY, float _X, float _Y, float _I, float _J) {
+
+	/**
+	 * 
+	 * @param isClockwise
+	 * @param _beginX
+	 * @param _beginY
+	 * @param _X
+	 * @param _Y
+	 * @param _I
+	 * @param _J
+	 */
+	public void arcPenInstruction(boolean isClockwise, float _beginX, float _beginY, float _X, float _Y, float _I,
+			float _J) {
 		int G2orG3;
-		if(isClockwise) {
+		if (isClockwise) {
 			G2orG3 = 2;
-		}else {
-			G2orG3 =3;
+		} else {
+			G2orG3 = 3;
 		}
-		//convert instructions to canvas dimensions
+		// convert instructions to canvas dimensions
 		float X = canvasOriginX + _X;
 		float X0 = canvasOriginX + _beginX;
 		float Y = canvasOriginY + _Y;
 		float Y0 = canvasOriginY + _beginY;
 		float I = _I;
-		float J =_J;
-		if(X > PHYSICALLIMITX || X < 0 || Y > PHYSICALLIMITY || Y < 0 ) {
+		float J = _J;
+		if (X > PHYSICALLIMITX || X < 0 || Y > PHYSICALLIMITY || Y < 0) {
 			System.out.println("EROOR outside limit arc");
 		}
 //		verifyGcodeArcInstruction(G2orG3, X, Y, I, J);
 //		currentInstructions += "G1 X" + Float.toString(X0) + " Y" + Float.toString(Y0) + " \n";
-		currentInstructions+="G" +  Integer.toString(G2orG3) + " X" + Float.toString(X) + " Y" + Float.toString(Y) + " I" + Float.toString(I)+ " J" + Float.toString(J) + " \n";
+		currentInstructions += "G" + Integer.toString(G2orG3) + " X" + Float.toString(X) + " Y" + Float.toString(Y)
+				+ " I" + Float.toString(I) + " J" + Float.toString(J) + " \n";
 		previousX = X;
 		previousY = Y;
 
 	}
-	
+
 	/**
 	 * pushMatrix()
 	 * 
@@ -491,7 +541,7 @@ public class Gcoder {
 		translateVarY = 0;
 		rotateVar = 0;
 	}
-	
+
 	/**
 	 * popMatrix()
 	 * 
@@ -501,7 +551,7 @@ public class Gcoder {
 		translateVarY = 0;
 		rotateVar = 0;
 	}
-	
+
 	/**
 	 * translate
 	 * 
@@ -512,22 +562,21 @@ public class Gcoder {
 		translateVarX += _x;
 		translateVarY += _y;
 	}
-	
+
 	/**
 	 * rotate
 	 * 
 	 * @param _angle rotation angle in radians
 	 */
 	public void rotate(float _angle) {
-		rotateVar +=  _angle;
+		rotateVar += _angle;
 	}
-	
 
 	/**
 	 * Write gcode instruction for a movement from origin to destination
 	 * 
-	 * @param x new PositionX
-	 * @param y new PositionY
+	 * @param x        new PositionX
+	 * @param y        new PositionY
 	 * @param _originX originX
 	 * @param _originY originY
 	 */
@@ -561,104 +610,116 @@ public class Gcoder {
 			x = y / pente - reste;
 		}
 
-		if(canvasOriginX + x < minX) { minX = canvasOriginX + x; }
-		if(canvasOriginY + y < minY) { minY = canvasOriginY + y; }
-		if(canvasOriginX + x > maxX) { maxX = canvasOriginX + x; }
-		if(canvasOriginY + y > maxY) { maxY = canvasOriginY + y; }
+		if (canvasOriginX + x < minX) {
+			minX = canvasOriginX + x;
+		}
+		if (canvasOriginY + y < minY) {
+			minY = canvasOriginY + y;
+		}
+		if (canvasOriginX + x > maxX) {
+			maxX = canvasOriginX + x;
+		}
+		if (canvasOriginY + y > maxY) {
+			maxY = canvasOriginY + y;
+		}
 
 		currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y)
 				+ "\n";
 
-		// store previous position so that we don't need to elevate the pen if it is not needed
+		// store previous position so that we don't need to elevate the pen if it is not
+		// needed
 		previousX = x;
 		previousY = y;
 	}
-	
-	
+
 	/**
-	 * This method is for simulating the drawing of a filled rectangle in white. It uses the geomerative library for calculating the intersect polygon of 2 shapes.
+	 * This method is for simulating the drawing of a filled rectangle in white. It
+	 * uses the geomerative library for calculating the intersect polygon of 2
+	 * shapes.
 	 * 
 	 * @param down the shape on which we want to draw (shape to cut)
-	 * @param up the shape which should appear on front
+	 * @param up   the shape which should appear on front
 	 * @return RShape
 	 */
-	public RShape addFilledShape(RShape down , RShape up) {
-	    try {
-	        int ii = down.getPointsInPaths().length;
-	    } catch (Exception e) {
-	        System.out.println("Probably empty start RShape. Returning upfront RShape");
-	        return up;
-	    }
+	public RShape addFilledShape(RShape down, RShape up) {
+		try {
+			int ii = down.getPointsInPaths().length;
+		} catch (Exception e) {
+			System.out.println("Probably empty start RShape. Returning upfront RShape");
+			return up;
+		}
 
-	    if (down.getPointsInPaths().length == 1) {
-	        RShape tmp = new RShape();
+		if (down.getPointsInPaths().length == 1) {
+			RShape tmp = new RShape();
 
-	        tmp = down.diff(up);
-	        if (tmp.countPaths() == 0) {
-	        	// if tmp.countPaths is 0 , so it means that the upfront shape cover completely the shape. So we return only the upfront shape
-	            return up;
-	        }
-	        up.addChild(tmp);
-	        RShape res = new RShape();
-	        res.addChild(up);
-	        res.addChild(tmp);
-	        RShape res2 = new RShape();
-	        for (int i = 0; i < res.getPointsInPaths().length - 1; i++) {
-	            RPath p = new RPath(res.getPointsInPaths()[i]);
-	            res2.addPath(p);
-	        }
-	        return res2;
+			tmp = down.diff(up);
+			if (tmp.countPaths() == 0) {
+				// if tmp.countPaths is 0 , so it means that the upfront shape cover completely
+				// the shape. So we return only the upfront shape
+				return up;
+			}
+			up.addChild(tmp);
+			RShape res = new RShape();
+			res.addChild(up);
+			res.addChild(tmp);
+			RShape res2 = new RShape();
+			for (int i = 0; i < res.getPointsInPaths().length - 1; i++) {
+				RPath p = new RPath(res.getPointsInPaths()[i]);
+				res2.addPath(p);
+			}
+			return res2;
 
-	    } else {
-	        RShape global = new RShape();
-	        for (int i = 0; i < down.getPointsInPaths().length; i++) {
-	            RShape rtemp = new RShape();
-	            RPath ptemp = new RPath(down.getPointsInPaths()[i]);
-	            rtemp.addPath(ptemp);
-	            global = addFilledShape(rtemp, up);
-	        }
-	        return global;
-	    }
+		} else {
+			RShape global = new RShape();
+			for (int i = 0; i < down.getPointsInPaths().length; i++) {
+				RShape rtemp = new RShape();
+				RPath ptemp = new RPath(down.getPointsInPaths()[i]);
+				rtemp.addPath(ptemp);
+				global = addFilledShape(rtemp, up);
+			}
+			return global;
+		}
 	}
-	
-/**
- * 	
- * @param r RShape to draw
- */
+
+	/**
+	 * 
+	 * @param r RShape to draw
+	 */
 	public void drawRShape(RShape r) {
 		drawRShape(r, .01f);
 	}
-	
+
 	/**
 	 * 
 	 * @param r
-	 * @param resolution it determines the quality of interpolation better is res il low i.e 0.01 but slower. It is also impacted by the resolution of RG from geomerative.
+	 * @param resolution it determines the quality of interpolation better is res il
+	 *                   low i.e 0.01 but slower. It is also impacted by the
+	 *                   resolution of RG from geomerative.
 	 */
 	public void drawRShape(RShape r, float resolution) {
-	    	// drawing resolution, 0< res <1 better resolution if 
-			// .01 by default
-	    for (int j = 0; j < r.getPointsInPaths().length; j++) {
+		// drawing resolution, 0< res <1 better resolution if
+		// .01 by default
+		for (int j = 0; j < r.getPointsInPaths().length; j++) {
 			RPath currentPath = new RPath(r.getPointsInPaths()[j]);
 			RPoint rpointPrev = currentPath.getPoint(0);
-	        for (float i = resolution; i <= 1; i+= resolution) {
-	        	try {
-	        	RPoint rpoint = currentPath.getPoint(i);
-	            float prevX = rpointPrev.x;
-	            float prevY = rpointPrev.y;
-	            float x = rpoint.x;
-	            float y = rpoint.y;
-	            drawLine(prevX, prevY, x, y,false);
-	            rpointPrev = rpoint;
-	        	}catch(Exception e) {
-	        		// Sometimes there is an error if resolution is too low. Don't know yet how to handle it bettre
+			for (float i = resolution; i <= 1; i += resolution) {
+				try {
+					RPoint rpoint = currentPath.getPoint(i);
+					float prevX = rpointPrev.x;
+					float prevY = rpointPrev.y;
+					float x = rpoint.x;
+					float y = rpoint.y;
+					drawLine(prevX, prevY, x, y, false);
+					rpointPrev = rpoint;
+				} catch (Exception e) {
+					// Sometimes there is an error if resolution is too low. Don't know yet how to
+					// handle it bettre
 					System.out.println("\n ERROR: Problem drawing RShape at " + Float.toString(i));
-	        		
-	        	}
-	        }
-	    }
-	}
-	
 
+				}
+			}
+		}
+	}
 
 	/**
 	 * Actual writing of all the buffered instructions to the output gcode file
@@ -666,27 +727,32 @@ public class Gcoder {
 	 */
 	public void writeToFile() {
 		DecimalFormat decimalFormat = new DecimalFormat("#0");
-		myParent.fill(255,0,0);
-		myParent.text("MinX = " + decimalFormat.format(minX) + " // MaxX = " + decimalFormat.format(maxX) ,
+		myParent.fill(255, 0, 0);
+		myParent.text("MinX = " + decimalFormat.format(minX) + " // MaxX = " + decimalFormat.format(maxX),
 				offsetProcessingDrawingX + PHYSICALLIMITX + 100, 40);
-		myParent.text("MinY = " + decimalFormat.format(minY) + " // MaxY = " + decimalFormat.format(maxY) ,
+		myParent.text("MinY = " + decimalFormat.format(minY) + " // MaxY = " + decimalFormat.format(maxY),
 				offsetProcessingDrawingX + PHYSICALLIMITX + 100, 60);
-		File file = new File(myParent.sketchPath()+ "\\" + outputFile + ".gcode");
+		File file = new File(myParent.sketchPath() + "\\" + outputFile + ".gcode");
 		try {
 			output = new PrintWriter(file);
-			String initCommands= "";
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ+ amplitudeOnZ) + "\n"; // additional lift on Z axis
+			String initCommands = "";
+			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n"; // additional lift on Z
+																								// axis
 			initCommands += "G28\n"; // Auto Home
 			initCommands += "G90\n"; // Set absolute positionning
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ+ amplitudeOnZ) + "\n"; // additional lift on Z axis
-			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " F" + Float.toString(speed) + "\n";
+			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n"; // additional lift on Z
+																								// axis
+			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " F"
+					+ Float.toString(speed) + "\n";
 			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ - morePushOnZ) + "\n";
 			output.print(initCommands);
 			output.print("; end of initialization\n");
 			output.print(currentInstructions);
 			output.print("; ending commands\n");
 			String endCommands = "";
-			endCommands += "G0 Z" + Float.toString(additionalLiftOnZ+ amplitudeOnZ) + "\n"; // elevatepen last time before returning to originPoint
+			endCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n"; // elevatepen last time
+																								// before returning to
+																								// originPoint
 			endCommands += "G28\n";
 			endCommands += "M84\n";
 			output.print(endCommands);
@@ -703,7 +769,7 @@ public class Gcoder {
 			System.out.println("MinY = " + Float.toString(minY));
 			System.out.println("MaxY = " + Float.toString(maxY));
 			System.out.println("-------------------------------\n");
-			if(minX <= 10 || maxX >= 300 || minY <= 10 || maxY >= 300 ) {
+			if (minX <= 10 || maxX >= 300 || minY <= 10 || maxY >= 300) {
 				System.out.println("///////////////////////////////////////");
 				System.out.println("ATTENTION : risk to draw outside limits");
 				System.out.println("///////////////////////////////////////");
@@ -714,21 +780,32 @@ public class Gcoder {
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * 
+	 */
 	public void writeCalibrationGcode() {
-		File file = new File(myParent.sketchPath()+ "\\" + outputFile + "-calibration.gcode");
+		File file = new File(myParent.sketchPath() + "\\" + outputFile + "-calibration.gcode");
 		try {
 			output = new PrintWriter(file);
-			String initCommands= "";
-			// The calibration file is a gcode file which just draw in the air the limits of the canvas, then go to the origin point at the printing z. So that the pen can be setup at this point.
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ+ amplitudeOnZ) + "\n"; // additional lift on Z axis
+			String initCommands = "";
+			// The calibration file is a gcode file which just draw in the air the limits of
+			// the canvas, then go to the origin point at the printing z. So that the pen
+			// can be setup at this point.
+			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n"; // additional lift on Z
+																								// axis
 			initCommands += "G28\n"; // Auto Home
 			initCommands += "G90\n"; // Set absolute positionning
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ+ amplitudeOnZ) + "\n"; // additional lift on Z axis
-			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " F" + Float.toString(speed) + "\n";
-			initCommands += "G1 X" + Float.toString(canvasOriginX + canvasWidth) + " Y" + Float.toString(canvasOriginY) + "\n";
-			initCommands += "G1 X" + Float.toString(canvasOriginX + canvasWidth) + " Y" + Float.toString(canvasOriginY + canvasHeight) + "\n";
-			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY + canvasHeight) + "\n";
+			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n"; // additional lift on Z
+																								// axis
+			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " F"
+					+ Float.toString(speed) + "\n";
+			initCommands += "G1 X" + Float.toString(canvasOriginX + canvasWidth) + " Y" + Float.toString(canvasOriginY)
+					+ "\n";
+			initCommands += "G1 X" + Float.toString(canvasOriginX + canvasWidth) + " Y"
+					+ Float.toString(canvasOriginY + canvasHeight) + "\n";
+			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY + canvasHeight)
+					+ "\n";
 			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + "\n";
 			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ) + "\n";
 			output.print(initCommands);
@@ -742,6 +819,6 @@ public class Gcoder {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 }

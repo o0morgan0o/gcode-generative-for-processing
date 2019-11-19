@@ -20,6 +20,17 @@ public class GcodeRectMesh {
     PGraphics canvas;
     Gcoder g;
  
+    /**
+     * 
+     * @param _g
+     * @param _myParent
+     * @param _canvas
+     * @param _pos
+     * @param _meshWidth
+     * @param _meshHeight
+     * @param _meshsPerWidth
+     * @param _meshsPerHeight
+     */
     public GcodeRectMesh(Gcoder _g, PApplet _myParent,PGraphics _canvas, PVector _pos, float _meshWidth, float _meshHeight, int _meshsPerWidth, int _meshsPerHeight) {
         meshWidth = _meshWidth;
         meshHeight = _meshHeight;
@@ -57,11 +68,18 @@ public class GcodeRectMesh {
         screenVertexes = new PVector[s.getVertexCount()];
     }
 
+    /**
+     * 
+     * @param newArr
+     */
     public void updateVertexesModifierZ(float[][] newArr) {
     	vertexesModifierZ = newArr;
     	updateVertexes();
     }
     
+    /**
+     * 
+     */
     private void updateVertexes() {
         int counteri = 0;
         int counterj = 0;
@@ -81,7 +99,9 @@ public class GcodeRectMesh {
     }
     
     
-
+/**
+ * 
+ */
     public void calculate2DProjection() {
         for (int i = 0; i < s.getVertexCount(); i++) {
             PVector v = s.getVertex(i);
@@ -92,12 +112,19 @@ public class GcodeRectMesh {
     }
 
 
+    /**
+     * 
+     */
     public void drawQuads() {
         drawHorizontalTiles(false);
         drawVerticalTiles(false);
     }
     
     
+    /**
+     * 
+     * @param try_optimize
+     */
     public void drawHorizontalTiles(boolean try_optimize){
         for (int i = 1; i < s.getVertexCount(); i++) {
             if (i % meshsPerWidth != 0) {
@@ -110,6 +137,10 @@ public class GcodeRectMesh {
 
     }
 
+    /**
+     * 
+     * @param try_optimize
+     */
     public void drawVerticalTiles(boolean try_optimize){
         for (int ii = 0; ii < meshsPerWidth; ii++) {
             for (int i = meshsPerWidth; i < s.getVertexCount(); i += meshsPerWidth) {
