@@ -28,6 +28,7 @@ public class Gcoder {
 
 	// myParent is a reference to the parent sketch
 	PApplet myParent;
+	public PGraphics canvas;
 
 	public final static String VERSION = "##library.prettyVersion##";
 	public String outputFile;
@@ -108,10 +109,13 @@ public class Gcoder {
 		minY = 10000;
 		maxX = -10000;
 		maxY = -10000;
+		
+		canvas = myParent.createGraphics((int)(PHYSICALLIMITX + 100),(int) (PHYSICALLIMITY + 100));
 
 		welcome();
 		drawLimitsOnSketch();
 	}
+
 
 	/**
 	 * 
@@ -137,23 +141,30 @@ public class Gcoder {
 	 */
 	private void drawLimitsOnSketch() {
 		PFont f = myParent.createFont("Arial", 16, true);
-		myParent.textFont(f);
-		myParent.text("(0,0)", offsetProcessingDrawingX, offsetProcessingDrawingY - 5);
-		myParent.text("(" + Float.toString(PHYSICALLIMITX) + ",0)", offsetProcessingDrawingX + PHYSICALLIMITX,
+		canvas.beginDraw();
+		myParent.background(122);
+		canvas.textFont(f);
+		canvas.text("(0,0)", offsetProcessingDrawingX, offsetProcessingDrawingY - 5);
+		canvas.text("(" + Float.toString(PHYSICALLIMITX) + ",0)", offsetProcessingDrawingX + PHYSICALLIMITX,
 				offsetProcessingDrawingY - 5);
-		myParent.text("(0, " + Float.toString(PHYSICALLIMITY) + ")", offsetProcessingDrawingX - 5,
+		canvas.text("(0, " + Float.toString(PHYSICALLIMITY) + ")", offsetProcessingDrawingX - 5,
 				offsetProcessingDrawingY + PHYSICALLIMITY + 20);
-		myParent.text("(" + Float.toString(PHYSICALLIMITX) + "," + Float.toString(PHYSICALLIMITY) + "0)",
+		canvas.text("(" + Float.toString(PHYSICALLIMITX) + "," + Float.toString(PHYSICALLIMITY) + "0)",
 				offsetProcessingDrawingX + PHYSICALLIMITX, offsetProcessingDrawingY + PHYSICALLIMITY + 20);
-		myParent.pushMatrix();
-		myParent.translate(offsetProcessingDrawingX, offsetProcessingDrawingY);
-		myParent.stroke(255, 0, 0);
-		myParent.rect(0, 0, PHYSICALLIMITX, PHYSICALLIMITY);
-		myParent.strokeWeight(5);
-		myParent.stroke(0, 255, 0);
-		myParent.rect(canvasOriginX, canvasOriginY, canvasWidth, canvasHeight);
-		myParent.strokeWeight(1);
-		myParent.popMatrix();
+		canvas.pushMatrix();
+		canvas.translate(offsetProcessingDrawingX, offsetProcessingDrawingY);
+		canvas.stroke(255, 0, 0);
+		canvas.rect(0, 0, PHYSICALLIMITX, PHYSICALLIMITY);
+		canvas.strokeWeight(5);
+		canvas.stroke(0, 255, 0);
+		canvas.rect(canvasOriginX, canvasOriginY, canvasWidth, canvasHeight);
+		canvas.strokeWeight(1);
+		canvas.popMatrix();
+		canvas.endDraw();
+	}
+	
+	public void show() {
+		myParent.image(canvas,0,0, canvas.width * 2 , canvas.height * 2);
 	}
 
 	private void welcome() {
@@ -165,7 +176,11 @@ public class Gcoder {
 	 * ignored and redraw the layout.
 	 *
 	 */
-	public void resetAndRedraw() {
+	public void reset() {
+//		myParent.background(122);
+		canvas.beginDraw();
+		canvas.background(255);
+		canvas.endDraw();
 		drawLimitsOnSketch();
 		currentInstructions = "";
 	}
@@ -342,12 +357,14 @@ public class Gcoder {
 
 		if (x1 <= canvasWidth && y1 <= canvasHeight && x2 <= canvasWidth && y2 <= canvasHeight && x1 >= 0 && y1 >= 0
 				&& x2 >= 0 && y2 >= 0) { // Check if the points are inside the canvas
-			myParent.pushMatrix();
-			myParent.translate(offsetProcessingDrawingX + canvasOriginX, offsetProcessingDrawingY + canvasOriginY);
-			myParent.stroke(0);
-			myParent.strokeWeight(1);
-			myParent.line(x1, y1, x2, y2);
-			myParent.popMatrix();
+			canvas.beginDraw();
+			canvas.pushMatrix();
+			canvas.translate(offsetProcessingDrawingX + canvasOriginX, offsetProcessingDrawingY + canvasOriginY);
+			canvas.stroke(0);
+			canvas.strokeWeight(1);
+			canvas.line(x1, y1, x2, y2);
+			canvas.popMatrix();
+			canvas.endDraw();
 			boolean isContinousDraw = false;
 			if (previousX == x1 && previousY == y1) {
 				isContinousDraw = true;
@@ -407,7 +424,14 @@ public class Gcoder {
 		}
 	}
 
-	
+/**
+ * 	
+ * @param beginPoint
+ * @param endPoint
+ * @param centerPoint
+ * @param sensRotation
+ * @return
+ */
 	public boolean isDrawableArc(PVector beginPoint, PVector endPoint, PVector centerPoint, float sensRotation) {
 		// check if point are inside the canvas
 		boolean isBeginPointIn = true;
@@ -419,7 +443,7 @@ public class Gcoder {
 			isEndPointIn = false;
 		}
 		if (!isBeginPointIn && !isEndPointIn) {
-			elevatePen();
+//			elevatePen();
 			return false;
 		} else if (isBeginPointIn && !isEndPointIn) {
 			drawLine(beginPoint.x, beginPoint.y, endPoint.x, endPoint.y, false);
@@ -432,18 +456,24 @@ public class Gcoder {
 		return true;
 	}
 
-	
+/**
+ * 	
+ * @param centerPoint
+ * @param beginPoint
+ * @param endPoint
+ * @param sensRotation
+ * @param isFirstInstruction
+ */
 	public void drawArc(PVector centerPoint, PVector beginPoint, PVector endPoint, float sensRotation,
 			boolean isFirstInstruction) {
 		if (!isDrawableArc(beginPoint, endPoint, centerPoint, sensRotation)) { // if the begin or end points are not in
-																				// the canvas, we draw nothing
 			return;
 		}
 
 		float radius = (float) Math
 				.pow(Math.pow(beginPoint.x - centerPoint.x, 2) + Math.pow(beginPoint.y - centerPoint.y, 2), 0.5);
-		myParent.stroke(0);
-		myParent.strokeWeight(1);
+		canvas.stroke(0);
+		canvas.strokeWeight(1);
 
 		// traduction en gcode
 		boolean isClockwise = false;
@@ -524,11 +554,10 @@ public class Gcoder {
 			System.out.println("EROOR outside limit arc");
 		}
 //		verifyGcodeArcInstruction(G2orG3, X, Y, I, J);
-//		currentInstructions += "G1 X" + Float.toString(X0) + " Y" + Float.toString(Y0) + " \n";
 		currentInstructions += "G" + Integer.toString(G2orG3) + " X" + Float.toString(X) + " Y" + Float.toString(Y)
 				+ " I" + Float.toString(I) + " J" + Float.toString(J) + " \n";
-		previousX = X;
-		previousY = Y;
+		previousX = _X;
+		previousY = _Y;
 
 	}
 

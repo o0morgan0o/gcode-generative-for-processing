@@ -51,33 +51,35 @@ public class BezierPoints {
 	 * @param showControlPoints
 	 */
 	public void processingDrawBezier(boolean showControlPoints) {
-		gcoder.myParent.noFill();
-		gcoder.myParent.stroke(0, 255, 0);
-		gcoder.myParent.pushMatrix();
-		gcoder.myParent.translate(gcoder.offsetProcessingDrawingX + gcoder.canvasOriginX,
+		gcoder.canvas.beginDraw();
+		gcoder.canvas.noFill();
+		gcoder.canvas.stroke(0,100, 0);
+		gcoder.canvas.pushMatrix();
+		gcoder.canvas.translate(gcoder.offsetProcessingDrawingX + gcoder.canvasOriginX,
 				gcoder.offsetProcessingDrawingY + gcoder.canvasOriginY);
-		gcoder.myParent.beginShape();
-		gcoder.myParent.vertex(points.get(0).x, points.get(0).y);
-		gcoder.myParent.bezierVertex(points.get(1).x, points.get(1).y, points.get(2).x, points.get(2).y,
+		gcoder.canvas.beginShape();
+		gcoder.canvas.vertex(points.get(0).x, points.get(0).y);
+		gcoder.canvas.bezierVertex(points.get(1).x, points.get(1).y, points.get(2).x, points.get(2).y,
 				points.get(3).x, points.get(3).y);
-		gcoder.myParent.endShape();
-		gcoder.myParent.stroke(255, 0, 0);
-		gcoder.myParent.strokeWeight(5);
-		gcoder.myParent.point(points.get(0).x, points.get(0).y);
-		gcoder.myParent.point(points.get(3).x, points.get(3).y);
+		gcoder.canvas.endShape();
+		gcoder.canvas.stroke(255, 0, 0);
+		gcoder.canvas.strokeWeight(5);
+		gcoder.canvas.point(points.get(0).x, points.get(0).y);
+		gcoder.canvas.point(points.get(3).x, points.get(3).y);
 
 		if(showControlPoints) { // show the control points if the variable is set to true
-		gcoder.myParent.strokeWeight(2);
-		gcoder.myParent.stroke(0,0,255);
-		gcoder.myParent.point(points.get(1).x, points.get(1).y);
-		gcoder.myParent.point(points.get(2).x, points.get(2).y);
-		gcoder.myParent.strokeWeight(1);
-		gcoder.myParent.line(points.get(0).x, points.get(0).y, points.get(1).x, points.get(1).y);
-		gcoder.myParent.line(points.get(2).x, points.get(2).y, points.get(3).x, points.get(3).y);
+		gcoder.canvas.strokeWeight(2);
+		gcoder.canvas.stroke(0,0,255);
+		gcoder.canvas.point(points.get(1).x, points.get(1).y);
+		gcoder.canvas.point(points.get(2).x, points.get(2).y);
+		gcoder.canvas.strokeWeight(1);
+		gcoder.canvas.line(points.get(0).x, points.get(0).y, points.get(1).x, points.get(1).y);
+		gcoder.canvas.line(points.get(2).x, points.get(2).y, points.get(3).x, points.get(3).y);
 		}
 
-		gcoder.myParent.stroke(0,0,0);
-		gcoder.myParent.popMatrix();
+		gcoder.canvas.stroke(0,0,0);
+		gcoder.canvas.popMatrix();
+		gcoder.canvas.endDraw();
 
 	}
 
@@ -119,6 +121,7 @@ public class BezierPoints {
 			gcoder.drawLine(a.x, a.y, b.x, b.y);
 			if (isLastInstruction) {
 				gcoder.drawLine(b.x, b.y, c.x, c.y);
+				gcoder.elevatePen();
 			}
 			return;
 		}
@@ -135,6 +138,7 @@ public class BezierPoints {
 				gcoder.drawLine(a.x, a.y, b.x, b.y);
 				if (isLastInstruction) {
 					gcoder.drawLine(b.x, b.y, c.x, c.y);
+					gcoder.elevatePen();
 				}
 				return;
 			}
@@ -155,6 +159,7 @@ public class BezierPoints {
 		gcoder.drawArc(centerPoint, a,b, sensRotation, isFirstInstruction);
 		if(isLastInstruction) {
 		gcoder.drawArc(centerPoint, b,c, sensRotation, isFirstInstruction);
+		gcoder.elevatePen();
 			
 		}
 
