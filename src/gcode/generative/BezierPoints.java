@@ -6,7 +6,7 @@ import java.lang.Math;
 import processing.core.PVector;
 
 public class BezierPoints {
-	ArrayList<PVector> points;
+	public ArrayList<PVector> points;
 	Gcoder gcoder;
 
 	public BezierPoints(PVector pt1, PVector pt2, PVector pt3, PVector pt4, Gcoder _gcoder) {
@@ -43,11 +43,20 @@ public class BezierPoints {
 				points.get(3).x, points.get(3).y);
 		gcoder.myParent.endShape();
 		gcoder.myParent.stroke(255, 0, 0);
-		gcoder.myParent.strokeWeight(10);
+		gcoder.myParent.strokeWeight(5);
 		gcoder.myParent.point(points.get(0).x, points.get(0).y);
+		gcoder.myParent.point(points.get(3).x, points.get(3).y);
+		gcoder.myParent.strokeWeight(2);
+		gcoder.myParent.stroke(0,0,255);
+
 		gcoder.myParent.point(points.get(1).x, points.get(1).y);
 		gcoder.myParent.point(points.get(2).x, points.get(2).y);
-		gcoder.myParent.point(points.get(3).x, points.get(3).y);
+		gcoder.myParent.strokeWeight(1);
+		gcoder.myParent.line(points.get(0).x, points.get(0).y, points.get(1).x, points.get(1).y);
+		gcoder.myParent.line(points.get(2).x, points.get(2).y, points.get(3).x, points.get(3).y);
+
+		gcoder.myParent.stroke(0,0,0);
+
 		gcoder.myParent.popMatrix();
 
 	}

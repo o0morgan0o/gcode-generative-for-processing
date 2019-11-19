@@ -8,6 +8,8 @@ public class BezierQuad {
 	Gcoder gcoder;
 	ArrayList<BezierPoints> points;
 	double resolution; // quality of interpolation of the bezier curve. must be between 0 and 1. 0.1 or
+	public BezierPoints lastBezierPoint;
+	public PVector lastPoint;
 						// 0.01 are OK
 
 	public BezierQuad(Gcoder _gcoder, PVector pt1, PVector pt2, PVector pt3, PVector pt4, double _resolution) {
@@ -17,14 +19,43 @@ public class BezierQuad {
 		points.add(origin);
 		resolution = _resolution;
 
+		lastBezierPoint= points.get(points.size()-1);
+		lastPoint= lastBezierPoint.points.get(3);
+
+
+
 	}
 //	public BezierQuad(Gcoder _gcoder, PVector pt1, PVector pt2, PVector pt3, PVector pt4) {
 //		this(_gcoder,pt1,pt2,pt3,pt4,.1);
 //	}
 
-	public void add(PVector pt1, PVector pt2, PVector pt3, PVector pt4) {
+	public void addPoint(PVector pt1, PVector pt2, PVector pt3, PVector pt4) {
 		BezierPoints newPoint = new BezierPoints(pt1, pt2, pt3, pt4, gcoder);
 		points.add(newPoint);
+		lastBezierPoint= points.get(points.size()-1);
+		lastPoint= lastBezierPoint.points.get(3);
+
+	}
+	public void addPoint(PVector pt3, PVector pt4) {
+		// method to add point to the bezier curve. We need only 2 control points because the first and second are the points of the precedent curve
+		
+		// get the points of the previous segment quad
+		BezierPoints prevSegment = points.get(points.size()-1);
+		PVector prevP4 = prevSegment.points.get(3);
+//		PVector tmpP1 = new PVector(80,20);
+//		PVector tmpP2 = points.get(points.size() - 1).points.get(points.size()-2);
+		// tmpP2 is the mirror of 3rd control point of previous segment.
+
+		PVector prevP3 = prevSegment.points.get(2);
+
+		float distX = prevP4.x - prevP3.x;
+		float distY = prevP4.y - prevP3.y;
+
+		PVector tmpP2 = new PVector(prevP4.x + distX, prevP4.y+distY);
+//		PVector tmpP2 = new PVector(120, 28);
+		addPoint(prevP4,tmpP2, pt3,pt4);
+//		BezierPoints newPoint = new BezierPoints(tmpP1, tmpP2, pt3, pt4, gcoder);
+//		points.add(newPoint);
 
 	}
 

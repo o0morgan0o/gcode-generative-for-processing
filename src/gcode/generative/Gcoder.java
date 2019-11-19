@@ -375,20 +375,32 @@ public class Gcoder {
 		}
 	}
 	
-	public boolean isDrawableArc(PVector beginPoint, PVector endPoint) {
+	public boolean isDrawableArc(PVector beginPoint, PVector endPoint, PVector centerPoint, float sensRotation) {
 		//check if point are inside the canvas
+		boolean isBeginPointIn = true;
+		boolean isEndPointIn = true;
 		if(beginPoint.x < 0 || beginPoint.x > canvasWidth || beginPoint.y < 0 || beginPoint.y >canvasHeight){
-			return false;
+			isBeginPointIn = false;
 		}
 		if(endPoint.x < 0 || endPoint.x > canvasWidth || endPoint.y < 0 || endPoint.y >canvasHeight){
-			return false;
+			isEndPointIn =false;
 		}
+		if(!isBeginPointIn && !isEndPointIn) {
+			elevatePen();
+			return false;
+		}else if(isBeginPointIn && !isEndPointIn) {
+				drawLine(beginPoint.x, beginPoint.y, endPoint.x, endPoint.y, false);
+				return false;
+		}else if(isEndPointIn && !isBeginPointIn) {
+				drawLine(endPoint.x, endPoint.y, beginPoint.x, beginPoint.y, false);
+				return false;
+		}
+		
 		return true;
 	}
 	
 	public void drawArc(PVector centerPoint, PVector beginPoint, PVector endPoint, float sensRotation, boolean isFirstInstruction) {
-		if(!isDrawableArc(beginPoint, endPoint)) { // if the begin or end points are not in the canvas, we draw nothing
-			elevatePen();
+		if(!isDrawableArc(beginPoint, endPoint,centerPoint, sensRotation)) { // if the begin or end points are not in the canvas, we draw nothing
 			return;
 		}
 
