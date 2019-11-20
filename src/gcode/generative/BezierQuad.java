@@ -28,7 +28,13 @@ public class BezierQuad {
 		points = new ArrayList<BezierPoints>();
 		BezierPoints origin = new BezierPoints(pt1, pt2, pt3, pt4, gcoder);
 		points.add(origin);
-		resolution = _resolution;
+		if(gcoder.guiEnabled == true) {
+//			myParent.println(gcoder.cp5.getController("cc"))
+			resolution = gcoder.cp5.getController("ccResolution").getValue();
+//			resolution = (double)0.1;
+		}else {
+			resolution = _resolution;
+		}
 
 		lastBezierPoint = points.get(points.size() - 1);
 		lastPoint = lastBezierPoint.points.get(3);
@@ -105,8 +111,10 @@ public class BezierQuad {
 	 * 
 	 */
 	public void draw() {
+		
+		
 		BezierPoints bezierPoint;
-		System.out.println("drawing a Bezier line ...");
+//		System.out.println("drawing a Bezier line ...");
 
 		boolean isFirstInstruction = true;
 		for (int i = 0; i < points.size(); i++) {

@@ -62,12 +62,12 @@ public class BezierPoints {
 		gcoder.canvas.bezierVertex(points.get(1).x, points.get(1).y, points.get(2).x, points.get(2).y,
 				points.get(3).x, points.get(3).y);
 		gcoder.canvas.endShape();
+
+		if(showControlPoints) { // show the control points if the variable is set to true
 		gcoder.canvas.stroke(255, 0, 0);
 		gcoder.canvas.strokeWeight(5);
 		gcoder.canvas.point(points.get(0).x, points.get(0).y);
 		gcoder.canvas.point(points.get(3).x, points.get(3).y);
-
-		if(showControlPoints) { // show the control points if the variable is set to true
 		gcoder.canvas.strokeWeight(2);
 		gcoder.canvas.stroke(0,0,255);
 		gcoder.canvas.point(points.get(1).x, points.get(1).y);

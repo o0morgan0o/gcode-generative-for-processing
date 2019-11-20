@@ -1,5 +1,6 @@
 package gcode.generative;
 
+import controlP5.*;
 import processing.core.*;
 import geomerative.*;
 import static processing.core.PApplet.*;
@@ -27,7 +28,7 @@ import static processing.core.PApplet.max;
 public class Gcoder {
 
 	// myParent is a reference to the parent sketch
-	PApplet myParent;
+	public PApplet myParent;
 	public PGraphics canvas;
 
 	public final static String VERSION = "##library.prettyVersion##";
@@ -53,6 +54,7 @@ public class Gcoder {
 
 	public float previousX;
 	public float previousY;
+	public float previousZ;
 
 	public float minX;
 	public float maxX;
@@ -67,8 +69,15 @@ public class Gcoder {
 	public float translateVarY = 0;
 	public float rotateVar = 0;
 
-	private PrintWriter output;
+	public PrintWriter output;
 	File file;
+	
+	
+	public boolean guiEnabled;
+	public ControlP5 cp5;
+	public float[] ccValues;
+	public boolean ccSave;
+	CheckBox saveGcode;
 
 	/**
 	 * The constructor for initialization of the library.
@@ -90,6 +99,7 @@ public class Gcoder {
 			float _amplitudeOnZ, float _additionalLiftOnZ, float _canvasOriginX, float _canvasOriginY,
 			float _canvasWidth, float _canvasHeight) {
 
+		guiEnabled= false;
 		myParent = theParent;
 
 		// initialization of the parameters -----------
@@ -110,11 +120,96 @@ public class Gcoder {
 		maxX = -10000;
 		maxY = -10000;
 		
+//		ccValues= { 
+//		ccSave=0;
+		
 		canvas = myParent.createGraphics((int)(PHYSICALLIMITX + 100),(int) (PHYSICALLIMITY + 100));
 
 		welcome();
 		drawLimitsOnSketch();
+
+//		createGUI();
 	}
+	
+	public void enableGUI() {
+		cp5= new ControlP5(myParent);
+
+		cp5.addSlider("cc1")
+		.setPosition(900,40)
+		.setSize(200,20)
+		.setRange(0, 300)
+		.setColorCaptionLabel(myParent.color(20,20,20));
+
+		cp5.addSlider("cc2")
+		.setPosition(900,70)
+		.setSize(200,20)
+		.setRange(0, 300)
+		.setColorCaptionLabel(myParent.color(20,20,20));
+
+		cp5.addSlider("cc3")
+		.setPosition(900,100)
+		.setSize(200,20)
+		.setRange(-300, 300)
+		.setColorCaptionLabel(myParent.color(20,20,20));
+
+		cp5.addSlider("cc4")
+		.setPosition(900,130)
+		.setSize(200,20)
+		.setRange(-100,100)
+		.setColorCaptionLabel(myParent.color(20,20,20));
+		
+		  cp5.addTextfield("cc5")
+		     .setPosition(900, 170)
+		     .setSize(200,20)
+		     .setFocus(true)
+		     .setColor(myParent.color(255,0,0))
+		     ;
+		  cp5.addTextfield("cc6")
+		     .setPosition(900, 220)
+		     .setSize(200,20)
+		     .setFocus(true)
+		     .setColor(myParent.color(255,0,0))
+		     ;
+
+		  saveGcode=cp5.addCheckBox("SaveGcode")
+		     .setPosition(900, 260)
+		     .setSize(200,19)
+		     .addItem("0",  0)
+		     ;
+
+		cp5.addSlider("ccResolution")
+		.setPosition(900,290)
+		.setSize(200,20)
+		.setRange((float)0.01,(float)0.1)
+		.setColorCaptionLabel(myParent.color(20,20,20))
+		.setValue((float).1);
+		  
+		  guiEnabled = true;
+	}
+	
+	public float[] getCCValues() {
+		
+		  ccValues = new float[] {cp5.getController("cc1").getValue(), 
+				  cp5.getController("cc2").getValue(),
+				  cp5.getController("cc3").getValue(), 
+				  cp5.getController("cc4").getValue(), 
+				  cp5.getController("cc5").getValue(), 
+				  cp5.getController("cc6").getValue(),
+				  0
+				  };
+
+		  boolean mustSave = false;
+		  if( saveGcode.getState(0) == false) {
+			  ccValues[6] = 0;
+		  }else {
+			 ccValues[6] = 1; 
+			 saveGcode.toggle(0);
+			 writeToFile();
+		  }
+		  return ccValues;
+	}
+	
+
 
 
 	/**
@@ -142,7 +237,7 @@ public class Gcoder {
 	private void drawLimitsOnSketch() {
 		PFont f = myParent.createFont("Arial", 16, true);
 		canvas.beginDraw();
-		myParent.background(122);
+		myParent.background(255);
 		canvas.textFont(f);
 		canvas.text("(0,0)", offsetProcessingDrawingX, offsetProcessingDrawingY - 5);
 		canvas.text("(" + Float.toString(PHYSICALLIMITX) + ",0)", offsetProcessingDrawingX + PHYSICALLIMITX,
@@ -164,6 +259,9 @@ public class Gcoder {
 	}
 	
 	public void show() {
+		if(guiEnabled) {
+			ccValues = getCCValues();
+		}
 		myParent.image(canvas,0,0, canvas.width * 2 , canvas.height * 2);
 	}
 
@@ -341,6 +439,7 @@ public class Gcoder {
 		}
 
 		if (optimize) {
+			System.out.println("optimizing");
 			// calculate the distance previousPoint => x1,y1 and previousPoint => x2,y2 to
 			// choose quickest draw
 			float mag1 = (new PVector(x1 - previousX, y1 - previousY)).mag();
@@ -501,7 +600,9 @@ public class Gcoder {
 	 */
 	public void elevatePen() {
 		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n";
+		previousZ = amplitudeOnZ;
 	}
+	
 
 	/**
 	 * Lower the pen
@@ -509,6 +610,7 @@ public class Gcoder {
 	 */
 	public void lowerPen() {
 		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ - morePushOnZ) + "\n";
+		previousZ = -morePushOnZ;
 	}
 
 	/**
@@ -765,7 +867,7 @@ public class Gcoder {
 		try {
 			output = new PrintWriter(file);
 			String initCommands = "";
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n"; // additional lift on Z
+			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ ) + "\n"; // additional lift on Z
 																								// axis
 			initCommands += "G28\n"; // Auto Home
 			initCommands += "G90\n"; // Set absolute positionning
@@ -779,9 +881,8 @@ public class Gcoder {
 			output.print(currentInstructions);
 			output.print("; ending commands\n");
 			String endCommands = "";
-			endCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n"; // elevatepen last time
-																								// before returning to
-																								// originPoint
+			endCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ + 20) + "\n"; // elevatepen last time
+			endCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " \n"; 
 			endCommands += "G28\n";
 			endCommands += "M84\n";
 			output.print(endCommands);
