@@ -45,6 +45,18 @@ public class BezierPoints {
 		return result;
 
 	}
+	
+	public void applyPushMatrix() {
+		for(int i = 0 ; i < points.size(); i++) {
+			PVector p = points.get(i);
+			PVector newP = new PVector((float) (p.x * Math.cos(gcoder.rotateVar) + p.y * Math.sin(gcoder.rotateVar)),(float)( -p.x * Math.sin(gcoder.rotateVar) + p.y *Math.cos(gcoder.rotateVar)));
+			newP.x += gcoder.translateVarX;
+			newP.y += gcoder.translateVarY;
+//			pointsAfterTransf.add(newP);
+			points.set(i, newP);
+		}
+		
+	}
 
 	/**
 	 * 
@@ -58,6 +70,7 @@ public class BezierPoints {
 		gcoder.canvas.translate(gcoder.offsetProcessingDrawingX + gcoder.canvasOriginX,
 				gcoder.offsetProcessingDrawingY + gcoder.canvasOriginY);
 		gcoder.canvas.beginShape();
+
 		gcoder.canvas.vertex(points.get(0).x, points.get(0).y);
 		gcoder.canvas.bezierVertex(points.get(1).x, points.get(1).y, points.get(2).x, points.get(2).y,
 				points.get(3).x, points.get(3).y);

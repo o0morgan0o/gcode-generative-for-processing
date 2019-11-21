@@ -76,6 +76,10 @@ public class Gcoder {
 	public boolean guiEnabled;
 	public ControlP5 cp5;
 	public float[] ccValues;
+	public float cc1;
+	public float cc2;
+	public float cc3;
+	public float cc4;
 	public boolean ccSave;
 	CheckBox saveGcode;
 
@@ -120,15 +124,12 @@ public class Gcoder {
 		maxX = -10000;
 		maxY = -10000;
 		
-//		ccValues= { 
-//		ccSave=0;
 		
 		canvas = myParent.createGraphics((int)(PHYSICALLIMITX + 100),(int) (PHYSICALLIMITY + 100));
 
 		welcome();
 		drawLimitsOnSketch();
 
-//		createGUI();
 	}
 	
 	public void enableGUI() {
@@ -197,6 +198,10 @@ public class Gcoder {
 				  cp5.getController("cc6").getValue(),
 				  0
 				  };
+		  cc1 = ccValues[0];
+		  cc2 = ccValues[1];
+		  cc3 = ccValues[2];
+		  cc4 = ccValues[3];
 
 		  boolean mustSave = false;
 		  if( saveGcode.getState(0) == false) {
@@ -243,7 +248,6 @@ public class Gcoder {
 	}
 	
 	public void customGcode(String beginGcode, String endGcode) {
-
 		// a implementer
 	}
 
@@ -414,8 +418,7 @@ public class Gcoder {
 	 *                             the logical is not right so set false if results
 	 *                             are not like intended.
 	 */
-	public void drawLine(float x1, float y1, float x2, float y2, boolean applyTransformations, boolean optimize) {
-		if (applyTransformations) {
+	public void applyPushMatrix(float x1, float y1, float x2, float y2, boolean optimize) {
 			// we calculate if we have a rotation in push Matrix
 			float tempX = x1 * cos(rotateVar) + y1 * sin(rotateVar);
 			float tempY = -x1 * sin(rotateVar) + y1 * cos(rotateVar);
@@ -431,6 +434,15 @@ public class Gcoder {
 			x2 += translateVarX;
 			y1 += translateVarY;
 			y2 += translateVarY;
+			drawLine(x1, y1, x2, y2, false, optimize);
+		
+	}
+
+	public void drawLine(float x1, float y1, float x2, float y2, boolean applyTransformations, boolean optimize) {
+		if(applyTransformations) {
+			
+		applyPushMatrix(x1, y1, x2, y2, optimize);
+		return;
 		}
 
 		// DEBUG ////////////////////////
@@ -447,7 +459,6 @@ public class Gcoder {
 		}
 
 		if (optimize) {
-			System.out.println("optimizing");
 			// calculate the distance previousPoint => x1,y1 and previousPoint => x2,y2 to
 			// choose quickest draw
 			float mag1 = (new PVector(x1 - previousX, y1 - previousY)).mag();
@@ -573,25 +584,19 @@ public class Gcoder {
  */
 	public void drawArc(PVector centerPoint, PVector beginPoint, PVector endPoint, float sensRotation,
 			boolean isFirstInstruction) {
-		//transformations
-			//apply rotation
-//		if(applyTransformations) {
-//		float tempX = x1 * cos(rotateVar) + y1 * sin(rotateVar);
-//		float tempY = -x1 * sin(rotateVar) + y1 * cos(rotateVar);
-//		x1 = tempX;
-//		y1 = tempY;
-//
-//		tempX = x2 * cos(rotateVar) + y2 * sin(rotateVar);
-//		tempY = -x2 * sin(rotateVar) + y2 * cos(rotateVar);
-//		x2 = tempX;
-//		y2 = tempY;
-//		// first we adapt if we made a pushMatrix =>
-//		x1 += translateVarX;
-//		x2 += translateVarX;
-//		y1 += translateVarY;
-//		y2 += translateVarY;
-//		}
-			//apply translation
+		myParent.println("trigger");
+		centerPoint = new PVector(centerPoint.x * cos(rotateVar) + centerPoint.y * sin(rotateVar), -centerPoint.y * sin(rotateVar) + centerPoint.y *cos(rotateVar));
+		beginPoint = new PVector(beginPoint.x * cos(rotateVar) + beginPoint.y * sin(rotateVar), -beginPoint.y * sin(rotateVar) + beginPoint.y *cos(rotateVar));
+		endPoint = new PVector(endPoint.x * cos(rotateVar) + endPoint.y * sin(rotateVar), -endPoint.y * sin(rotateVar) + endPoint.y *cos(rotateVar));
+
+		centerPoint.x += translateVarX;
+		beginPoint.x += translateVarX;
+		endPoint.x += translateVarX;
+
+		centerPoint.y += translateVarY;
+		beginPoint.y += translateVarY;
+		endPoint.y += translateVarY;
+
 		if (!isDrawableArc(beginPoint, endPoint, centerPoint, sensRotation)) { // if the begin or end points are not in
 			return;
 		}

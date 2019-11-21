@@ -120,7 +120,8 @@ public class BezierQuad {
 		for (int i = 0; i < points.size(); i++) {
 			boolean isLastInstruction = false; // necessaire pour finir l'arc lorsqu'on fait le dernier point
 			bezierPoint = points.get(i);
-			bezierPoint.processingDrawBezier(showControlPoints);
+			bezierPoint.applyPushMatrix();
+
 			ArrayList<PVector> currentControlPoints = bezierPoint.points;
 
 			PVector currentPrevPoint = bezierPoint.interpolateBezierPoint(currentControlPoints.get(0),
@@ -148,6 +149,7 @@ public class BezierQuad {
 					isLastInstruction);
 			currentPrevPrevPoint = currentPrevPoint;
 			currentPrevPoint = currentPoint;
+			bezierPoint.processingDrawBezier(showControlPoints);
 		}
 		gcoder.elevatePen();
 	}
