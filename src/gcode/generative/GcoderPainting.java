@@ -14,6 +14,7 @@ public class GcoderPainting extends Gcoder{
 	public float highZ;
 	public float reloadZ;
 	public float paintingZ;
+	boolean comingFromReload = false;
 	
 	
 	public PVector color1 = new PVector(70,265);
@@ -21,6 +22,7 @@ public class GcoderPainting extends Gcoder{
 	public PVector color3 = new PVector(70,189);
 	public PVector color4 = new PVector(70,151);
 	public PVector water;
+	float speed = 8000;
 	
 	
 
@@ -61,8 +63,9 @@ public class GcoderPainting extends Gcoder{
 		mixingPen(colPos);
 		cleanUpPen();
 		elevatePenCustom(highZ);
+		comingFromReload = true;
 //		movePenDangerously(super.canvasOriginX, super.canvasOriginY);
-		movePenTo(returnX, returnY,0,0);
+//		movePenTo(returnX, returnY,0,0);
 
 
 		
@@ -70,11 +73,11 @@ public class GcoderPainting extends Gcoder{
 	
 	
 	public void movePenDangerously(float X, float Y) {
-		super.currentInstructions += "G1 X" + Float.toString(X) + " Y" + Float.toString(Y) + " \n";
+		currentInstructions += "G1 X" + Float.toString(X) + " Y" + Float.toString(Y) + " \n";
 	}
 
 	public void elevatePenCustom(float Z) {
-		super.currentInstructions += "G0 Z" + Float.toString(Z + additionalLiftOnZ) + "\n";
+		currentInstructions += "G0 Z" + Float.toString(Z + additionalLiftOnZ) + "\n";
 		previousZ = Z;
 	}
 	
@@ -91,26 +94,45 @@ public class GcoderPainting extends Gcoder{
 		
 	}
 	
-	public void drawLine(float orginX, float originY, float destX, float destY, PVector _color, String noReload) {
-		if (noReload != "NO_RELOAD") {
-			reloadColor(_color);
+//	public void drawLine(float originX, float originY, float destX, float destY, PVector _color, String noReload) {
+//		if (noReload != "NO_RELOAD") {
+//			reloadColor(_color);
+//		}
+//		elevatePenCustom(paintingZ);
+//		super.drawLine(originX, originY, destX, destY, false); //no optimization
+//	}
+
+	public void paintLine(float originX, float originY, float destX, float destY) {
+		if(comingFromReload == true) {
+			// if we come from reload we make sure that the first move is inside the canvas, else we return to the canvas origin point
+			if(canvasOriginX + originX >= 0 && canvasOriginX + originX <= PHYSICALLIMITX && canvasOriginY + originY >=0 && canvasOriginY + originY <=PHYSICALLIMITY) {
+				movePenDangerously(canvasOriginX + originX, canvasOriginY + originY);
+			}else {
+				movePenDangerously(canvasOriginX, canvasOriginY);
+			}
+			comingFromReload = false;
 		}
-		elevatePenCustom(paintingZ);
-		super.drawLine(orginX, originY, destX, destY, false); //no optimization
-	}
-	public void drawLine(float originX, float originY, float destX, float destY, PVector _color) {
-		drawLine(originX, originY, destX, destY, _color, "RELOAD");
+		drawLine(originX, originY, destX, destY, false);
+//		drawLine(originX, originY, destX, destY, _color, false);
 			
 	}
 
 	public void drawRect(float x, float y, float w, float h, PVector _color, String noReload) {
-		drawLine(x, y, x + w, y, _color, noReload);
-		drawLine(x + w, y, x + w, y + h, _color, noReload);
-		drawLine(x + w, y + h, x, y + h, _color, noReload);
-		drawLine(x, y + h, x, y, _color, noReload);
+//		drawLine(x, y, x + w, y, _color, noReload);
+//		drawLine(x + w, y, x + w, y + h, _color, noReload);
+//		drawLine(x + w, y + h, x, y + h, _color, noReload);
+//		drawLine(x, y + h, x, y, _color, noReload);
+		paintLine(x, y, x + w, y);
+		paintLine(x + w, y, x + w, y + h);
+		paintLine(x + w, y + h, x, y + h);
+		paintLine(x, y + h, x, y);
 	}
 	public void drawRect(float x, float y, float w, float h, PVector _color) {
 		drawRect(x,y,w,h,_color, "RELOAD");
+	}
+	
+	public void basicMoveTo(float X, float Y) {
+		currentInstructions += "G1 X" + Float.toString(X) + " Y" + Float.toString(Y) + " \n";
 	}
 
 	public void writeToFile() {
@@ -124,6 +146,7 @@ public class GcoderPainting extends Gcoder{
 		try {
 			output = new PrintWriter(file);
 			String initCommands = "";
+			initCommands += "G0 F" + Float.toString(speed) + " \n";
 			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + highZ) + "\n"; // additional lift on Z
 																								// axis
 			initCommands += "G28\n"; // Auto Home
@@ -137,7 +160,7 @@ public class GcoderPainting extends Gcoder{
 			output.print(currentInstructions);
 			output.print("; ending commands\n");
 			String endCommands = "";
-			endCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ + 20) + "\n"; // elevatepen last time
+			endCommands += "G0 Z" + Float.toString(additionalLiftOnZ + highZ + 20) + "\n"; // elevatepen last time
 			endCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " \n"; 
 			endCommands += "G28\n";
 			endCommands += "M84\n";

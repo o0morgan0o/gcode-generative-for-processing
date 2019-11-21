@@ -230,6 +230,22 @@ public class Gcoder {
 		this(theParent, _outputFile, _PHYSICALLIMITX, _PHYSICALLIMITY, _amplitudeOnZ, (float) 15, _canvasOriginX,
 				_canvasOriginY, _canvasWidth, _canvasHeight);
 	}
+	
+	
+	/**
+	 * change the moving speed for the next instructions
+	 * 
+	 * @param _speed the new speed in mm/min
+	 */
+	public void setSpeed(float newSpeed) {
+		speed = newSpeed;
+		currentInstructions+= "G1 F" + Float.toString(newSpeed) + " \n";
+	}
+	
+	public void customGcode(String beginGcode, String endGcode) {
+
+		// a implementer
+	}
 
 	/**
 	 * 
@@ -296,14 +312,6 @@ public class Gcoder {
 //		return null;
 //	}
 
-	/**
-	 * change the moving speed for the next instructions
-	 * 
-	 * @param _speed the new speed in mm/min
-	 */
-	public void setSpeed(float _speed) {
-		speed = _speed;
-	}
 
 	/**
 	 * change the amplitude of displacement on z axis for the elevation or descent
@@ -565,6 +573,25 @@ public class Gcoder {
  */
 	public void drawArc(PVector centerPoint, PVector beginPoint, PVector endPoint, float sensRotation,
 			boolean isFirstInstruction) {
+		//transformations
+			//apply rotation
+//		if(applyTransformations) {
+//		float tempX = x1 * cos(rotateVar) + y1 * sin(rotateVar);
+//		float tempY = -x1 * sin(rotateVar) + y1 * cos(rotateVar);
+//		x1 = tempX;
+//		y1 = tempY;
+//
+//		tempX = x2 * cos(rotateVar) + y2 * sin(rotateVar);
+//		tempY = -x2 * sin(rotateVar) + y2 * cos(rotateVar);
+//		x2 = tempX;
+//		y2 = tempY;
+//		// first we adapt if we made a pushMatrix =>
+//		x1 += translateVarX;
+//		x2 += translateVarX;
+//		y1 += translateVarY;
+//		y2 += translateVarY;
+//		}
+			//apply translation
 		if (!isDrawableArc(beginPoint, endPoint, centerPoint, sensRotation)) { // if the begin or end points are not in
 			return;
 		}
