@@ -18,6 +18,8 @@ void setup(){
     g.drawRect(50,100, 60,60);
     g.drawRect(70,120, 100, 60);
 
+    g.show();
+
     g.writeToFile();
 }
 

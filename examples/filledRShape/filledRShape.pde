@@ -20,6 +20,7 @@ void setup() {
 
 
     g.drawRShape(rfinal); // Convert and draw lines to gcode instructions
+    g.show();
     g.writeToFile(); // write GCode
 
 

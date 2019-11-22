@@ -27,7 +27,9 @@ void setup() {
 
     rfinal = g.addFilledShape(rfinal, s); // make the shape a filled Shape
 
-    g.drawRShape(rfinal); // Convert and draw lines to gcode instructions
+    g.drawRShape(rfinal);
+    g.show();
+    // Convert and draw lines to gcode instructions
     g.writeToFile(); // write GCode
 
 

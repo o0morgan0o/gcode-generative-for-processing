@@ -14,7 +14,7 @@ void setup() {
 
 
 void draw() {
-    g.resetAndRedraw();
+    g.reset();
     g.addMorePush(.2); // used in order to add some pression to the pen during the drawing. (value in mm)
 
     m = new GcodeRectMesh(g, this, canvas, new PVector(0, 0, 0), 200,200, 20,20); 
@@ -34,7 +34,9 @@ void draw() {
     canvas.popMatrix();
     canvas.endDraw();
 
+ 
     g.drawRect(0, 0, g.canvasWidth, g.canvasHeight);
+    g.show();
     g.writeToFile(); // write gcode instructions into file
     noLoop();
 }

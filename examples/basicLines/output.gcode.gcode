@@ -3,7 +3,6 @@ G28
 G90
 G0 Z17.5
 G1 X100.0 Y25.0 F2400.0
-G0 Z15.0
 ; end of initialization
 G0 Z17.5
 G1 X150.0 Y75.0
@@ -28,6 +27,7 @@ G1 X270.0 Y205.0
 G1 X170.0 Y205.0
 G1 X170.0 Y145.0
 ; ending commands
-G0 Z17.5
+G0 Z37.5
+G1 X100.0 Y25.0 
 G28
 M84

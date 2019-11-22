@@ -31,10 +31,10 @@ void setup() {
 
 void draw() {
     canvas = createGraphics((int) g.canvasWidth, (int) g.canvasHeight, P3D);
-    g.resetAndRedraw();
-    g.addMorePush(.2);
+    g.reset();
+    
 
-    m = new GcodeRectMesh(g, this, canvas, new PVector(0,500,1000), 600, 800, 15, 15);
+    m = new GcodeRectMesh(g, this, canvas, new PVector(0,500,1000), 600, 800, 5, 5);
 
     float[][] arr = new float[m.meshsPerHeight][m.meshsPerWidth];
     for (int i =0 ; i < m.meshsPerHeight; i++){
@@ -91,6 +91,7 @@ void draw() {
     g.drawRShape(rfinal);
 
     g.drawRect(0, 0, g.canvasWidth, g.canvasHeight);
+   g.show();
     g.writeToFile();
     noLoop();
 }

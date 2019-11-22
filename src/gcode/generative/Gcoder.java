@@ -55,6 +55,7 @@ public class Gcoder {
 	public float previousX;
 	public float previousY;
 	public float previousZ;
+	public float currentZ;
 
 	public float minX;
 	public float maxX;
@@ -72,6 +73,9 @@ public class Gcoder {
 	public PrintWriter output;
 	File file;
 	
+	public boolean isDrawingLine = false;
+	public String drawingStyle = "NORMAL";
+	public float ZCurling = 0;
 	
 	public boolean guiEnabled;
 	public ControlP5 cp5;
@@ -124,6 +128,10 @@ public class Gcoder {
 		maxX = -10000;
 		maxY = -10000;
 		
+		previousX= -1;
+		previousY= -1;
+		currentZ =0 ;
+		
 		
 		canvas = myParent.createGraphics((int)(PHYSICALLIMITX + 100),(int) (PHYSICALLIMITY + 100));
 
@@ -131,6 +139,27 @@ public class Gcoder {
 		drawLimitsOnSketch();
 
 	}
+
+
+	/**
+	 * 
+	 * @param theParent
+	 * @param _outputFile
+	 * @param _PHYSICALLIMITX
+	 * @param _PHYSICALLIMITY
+	 * @param _amplitudeOnZ
+	 * @param _canvasOriginX
+	 * @param _canvasOriginY
+	 * @param _canvasWidth
+	 * @param _canvasHeight
+	 */
+	public Gcoder(PApplet theParent, String _outputFile, float _PHYSICALLIMITX, float _PHYSICALLIMITY,
+			float _amplitudeOnZ, float _canvasOriginX, float _canvasOriginY, float _canvasWidth, float _canvasHeight) {
+		// return additionalLiftOnZ = 15 if it is not specified
+		this(theParent, _outputFile, _PHYSICALLIMITX, _PHYSICALLIMITY, _amplitudeOnZ, (float) 15, _canvasOriginX,
+				_canvasOriginY, _canvasWidth, _canvasHeight);
+	}
+	
 	
 	public void enableGUI() {
 		cp5= new ControlP5(myParent);
@@ -215,27 +244,24 @@ public class Gcoder {
 	}
 	
 
-
-
-	/**
-	 * 
-	 * @param theParent
-	 * @param _outputFile
-	 * @param _PHYSICALLIMITX
-	 * @param _PHYSICALLIMITY
-	 * @param _amplitudeOnZ
-	 * @param _canvasOriginX
-	 * @param _canvasOriginY
-	 * @param _canvasWidth
-	 * @param _canvasHeight
-	 */
-	public Gcoder(PApplet theParent, String _outputFile, float _PHYSICALLIMITX, float _PHYSICALLIMITY,
-			float _amplitudeOnZ, float _canvasOriginX, float _canvasOriginY, float _canvasWidth, float _canvasHeight) {
-		// return additionalLiftOnZ = 15 if it is not specified
-		this(theParent, _outputFile, _PHYSICALLIMITX, _PHYSICALLIMITY, _amplitudeOnZ, (float) 15, _canvasOriginX,
-				_canvasOriginY, _canvasWidth, _canvasHeight);
+	public void setDrawingStyle(String style, float _ZCurling) {
+		switch(style) {
+		case "NORMAL":
+			drawingStyle = style;
+			ZCurling = _ZCurling;
+			break;
+		case "ASCENT":
+			drawingStyle = style;
+			ZCurling = _ZCurling;
+			break;
+		case"DESCENT":
+			drawingStyle = style;
+			ZCurling = _ZCurling;
+			break;
+			default:
+				break;
+		}
 	}
-	
 	
 	/**
 	 * change the moving speed for the next instructions
@@ -496,9 +522,11 @@ public class Gcoder {
 			if (!isContinousDraw) {
 				elevatePen();
 				movePenTo(x1, y1, previousX, previousY);
-				lowerPen();
+//				currentInstructions+= "next drawing \n";
+				lowerPen(drawingStyle);
+				isDrawingLine = true;
 			}
-			movePenTo(x2, y2, previousX, previousY);
+			movePenTo(x2, y2, previousX, previousY, isDrawingLine );
 
 		} else if (x1 == x2) {
 			// If the line is a vertical line, we must treat it apart because of the
@@ -514,42 +542,42 @@ public class Gcoder {
 			float pente = (y2 - y1) / (x2 - x1);
 			float reste = y2 - pente * x2;
 			if (x1 > canvasWidth) {
-				myParent.println(x1,x2, y1, y2);
+//				myParent.println(x1,x2, y1, y2);
 				float newX1 = canvasWidth;
 				float newY1 = pente * newX1 + reste;
 				drawLine(newX1, newY1, x2, y2, false, false);
 			} else if (x2 > canvasWidth) {
-				myParent.println(x1,x2, y1, y2);
+//				myParent.println(x1,x2, y1, y2);
 				float newX2 = canvasWidth;
 				float newY2 = pente * newX2 + reste;
 				drawLine(x1, y1, newX2, newY2, false,false);
 			} else if (y1 > canvasHeight) {
-				myParent.println(x1,x2, y1, y2);
+//				myParent.println(x1,x2, y1, y2);
 				float newY1 = canvasHeight;
 				float newX1 = (newY1 - reste) / pente;
 				drawLine(newX1, newY1, x2, y2,false, false);
 			} else if (y2 > canvasHeight) {
-				myParent.println(x1,x2, y1, y2);
+//				myParent.println(x1,x2, y1, y2);
 				float newY2 = canvasHeight;
 				float newX2 = (newY2 - reste) / pente;
 				drawLine(x1, y1, newX2, newY2, false,false);
 			} else if (x1 < 0) {
-				myParent.println(x1,x2, y1, y2);
+//				myParent.println(x1,x2, y1, y2);
 				float newX1 = 0;
 				float newY1 = pente * newX1 + reste;
 				drawLine(newX1, newY1, x2, y2,false, false);
 			} else if (x2 < 0) {
-				myParent.println(x1,x2, y1, y2);
+//				myParent.println(x1,x2, y1, y2);
 				float newX2 = 0;
 				float newY2 = pente * newX2 + reste;
 				drawLine(x1, y1, newX2, newY2, false,false);
 			} else if (y1 < 0) {
-				myParent.println(x1,x2, y1, y2);
+//				myParent.println(x1,x2, y1, y2);
 				float newY1 = 0;
 				float newX1 = (newY1 - reste) / pente;
 				drawLine(newX1, newY1, x2, y2, false,false);
 			} else if (y2 < 0) {
-				myParent.println(x1,x2, y1, y2);
+//				myParent.println(x1,x2, y1, y2);
 				float newY2 = 0;
 				float newX2 = (newY2 - reste) / pente;
 				drawLine(x1, y1, newX2, newY2, false,false);
@@ -649,6 +677,7 @@ public class Gcoder {
 	public void elevatePen() {
 		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n";
 		previousZ = amplitudeOnZ;
+		currentZ = additionalLiftOnZ + amplitudeOnZ;
 	}
 	
 
@@ -656,9 +685,31 @@ public class Gcoder {
 	 * Lower the pen
 	 * 
 	 */
+	public void lowerPen(String _drawingStyle) {
+		float Zresult=0;
+		switch(_drawingStyle) {
+		case "NORMAL":
+			Zresult = ZCurling;
+			break;
+		case "ASCENT":
+			Zresult=0;
+			break;
+		case "DESCENT":
+			Zresult =ZCurling;
+			break;
+			default:
+				Zresult = 0;
+				break;
+		}
+			previousZ = Zresult;
+			myParent.println("Zresult, ", Zresult);
+//			currentInstructions += "toggle \n";
+
+		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ + Zresult) + "\n";
+		currentZ = additionalLiftOnZ + Zresult;
+	}
 	public void lowerPen() {
-		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ - morePushOnZ) + "\n";
-		previousZ = -morePushOnZ;
+		lowerPen("IGNORED");
 	}
 
 	/**
@@ -750,6 +801,10 @@ public class Gcoder {
 	public void rotate(float _angle) {
 		rotateVar += _angle;
 	}
+	
+	public void movePenTo(float x , float y , float _originX, float _originY) {
+		movePenTo(x,y,_originX, _originY, false);
+	}
 
 	/**
 	 * Write gcode instruction for a movement from origin to destination
@@ -759,7 +814,7 @@ public class Gcoder {
 	 * @param _originX originX
 	 * @param _originY originY
 	 */
-	public void movePenTo(float x, float y, float _originX, float _originY) {
+	public void movePenTo(float x, float y, float _originX, float _originY, boolean isDrawing) {
 		if (x == _originX && y == _originY) {
 			return;
 		}
@@ -802,8 +857,29 @@ public class Gcoder {
 			maxY = canvasOriginY + y;
 		}
 
-		currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y)
-				+ "\n";
+		if(drawingStyle == "ASCENT") {
+			if(isDrawing) {
+				currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y) + " Z" + Float.toString(additionalLiftOnZ + ZCurling) + "\n";
+//				currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + " \n";
+			}else {
+				currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y) + "\n";
+			}
+//			currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ) + " \n";
+//			currentZ = additionalLiftOnZ + ZCurling;
+		}else if(drawingStyle == "DESCENT") {
+			if(isDrawing) {
+				currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y) + " Z" + Float.toString(additionalLiftOnZ) + "\n";
+//				elevatePen();
+			}else {
+				currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y) + "\n";
+			}
+//			currentInstructions += " Z" + Float.toString(additionalLiftOnZ) + "\n";
+//			currentInstructions += "G1 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n";
+//			currentZ = additionalLiftOnZ +amplitudeOnZ;
+		}else {
+			currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y) + "\n";
+		}
+		
 
 		// store previous position so that we don't need to elevate the pen if it is not
 		// needed
@@ -961,7 +1037,7 @@ public class Gcoder {
 
 	/**
 	 * 
-	 */
+	 */ 
 	public void writeCalibrationGcode() {
 		File file = new File(myParent.sketchPath() + "\\" + outputFile + "-calibration.gcode");
 		try {
