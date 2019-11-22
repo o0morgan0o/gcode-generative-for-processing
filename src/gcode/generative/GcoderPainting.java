@@ -49,7 +49,7 @@ public class GcoderPainting extends Gcoder{
 		
 	}
 	
-	public void reloadColor(PVector colPos) {
+	public void reloadColor(PVector colPos, boolean mix) {
 		float returnX = previousX;
 		float returnY = previousY;
 		previousX = -1;
@@ -60,7 +60,11 @@ public class GcoderPainting extends Gcoder{
 		
 		// add water
 		
-		mixingPen(colPos);
+
+		if(mix) {
+			mixingPen(colPos);
+		}
+
 		cleanUpPen();
 		elevatePenCustom(highZ);
 		comingFromReload = true;
@@ -71,9 +75,9 @@ public class GcoderPainting extends Gcoder{
 		
 	}
 	
-	public void reloadColor(PVector col1Pos, PVector col2Pos) {
-		reloadColor(col1Pos);
-		reloadColor(col2Pos);
+	public void reloadColor(PVector col1Pos, PVector col2Pos, boolean mix) {
+		reloadColor(col1Pos, mix);
+		reloadColor(col2Pos, mix);
 	}
 	
 	
@@ -121,19 +125,48 @@ public class GcoderPainting extends Gcoder{
 //		drawLine(originX, originY, destX, destY, _color, false);
 			
 	}
+	
+	public void paintPoint(float X, float Y, float offset) {
+		// check limit conditions
+		if(X >= 0 && X <= canvasWidth && Y >=0 && Y < canvasHeight) {
+			canvas.beginDraw();
+			canvas.stroke(0);
+			float myStroke = myParent.map(offset, -amplitudeOnZ, amplitudeOnZ, 10, 1);
+			canvas.strokeWeight(myStroke);
+			canvas.point(offsetProcessingDrawingX +canvasOriginX +  X, offsetProcessingDrawingY +canvasOriginY+ Y);
+			canvas.strokeWeight(1);
+			canvas.endDraw();
+			elevatePenCustom(highZ);
+			movePenTo(X, Y, 0,0);
+			currentInstructions+= "G0 Z" + Float.toString(additionalLiftOnZ + offset) + " \n"; 
+			elevatePen();
+		}else {
+			myParent.println("ERROR Point outside limits");
+		}
+	}
+	
+	public void paintPoint(float X, float Y) {
+		paintPoint(X,Y, 0);
+	}
 
-	public void drawRect(float x, float y, float w, float h, PVector _color, String noReload) {
+	public void paintRectangle(float x, float y, float w, float h, PVector _color, String noReload) {
 //		drawLine(x, y, x + w, y, _color, noReload);
 //		drawLine(x + w, y, x + w, y + h, _color, noReload);
 //		drawLine(x + w, y + h, x, y + h, _color, noReload);
 //		drawLine(x, y + h, x, y, _color, noReload);
 		paintLine(x, y, x + w, y);
+		elevatePen();
+		lowerPen(drawingStyle);
 		paintLine(x + w, y, x + w, y + h);
+		elevatePen();
+		lowerPen(drawingStyle);
 		paintLine(x + w, y + h, x, y + h);
+		elevatePen();
+		lowerPen(drawingStyle);
 		paintLine(x, y + h, x, y);
 	}
-	public void drawRect(float x, float y, float w, float h, PVector _color) {
-		drawRect(x,y,w,h,_color, "RELOAD");
+	public void paintRectangle(float x, float y, float w, float h, PVector _color) {
+		paintRectangle(x,y,w,h,_color, "RELOAD");
 	}
 	
 	public void basicMoveTo(float X, float Y) {
@@ -165,7 +198,7 @@ public class GcoderPainting extends Gcoder{
 			output.print(currentInstructions);
 			output.print("; ending commands\n");
 			String endCommands = "";
-			endCommands += "G0 Z" + Float.toString(additionalLiftOnZ + highZ + 20) + "\n"; // elevatepen last time
+			endCommands += "G0 Z" + Float.toString(additionalLiftOnZ + highZ ) + "\n"; // elevatepen last time
 			endCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " \n"; 
 			endCommands += "G28\n";
 			endCommands += "M84\n";
