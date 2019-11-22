@@ -434,15 +434,21 @@ public class Gcoder {
 			x2 += translateVarX;
 			y1 += translateVarY;
 			y2 += translateVarY;
+			myParent.println("after matrix : ", x1, y1, x2, y2);
 			drawLine(x1, y1, x2, y2, false, optimize);
 		
 	}
 
 	public void drawLine(float x1, float y1, float x2, float y2, boolean applyTransformations, boolean optimize) {
+		//limit Point don't draw if point of origin is the same as the point of destination
+		if(x1 == x2 && y1 == y2) {
+			return;
+		}
+		
+		
 		if(applyTransformations) {
-			
-		applyPushMatrix(x1, y1, x2, y2, optimize);
-		return;
+			applyPushMatrix(x1, y1, x2, y2, optimize);
+			return;
 		}
 
 		// DEBUG ////////////////////////
@@ -502,42 +508,53 @@ public class Gcoder {
 			drawLine(x1, newY1, x2, newY2, false);
 
 		} else {
+			myParent.println("try interpolation");
 			// interpolation if a point is outside the canvas => we calc the equation of
 			// the line and get the intersection of the line with the limits of the canvas
 			float pente = (y2 - y1) / (x2 - x1);
 			float reste = y2 - pente * x2;
 			if (x1 > canvasWidth) {
+				myParent.println(x1,x2, y1, y2);
 				float newX1 = canvasWidth;
 				float newY1 = pente * newX1 + reste;
-				drawLine(newX1, newY1, x2, y2, false);
+				drawLine(newX1, newY1, x2, y2, false, false);
 			} else if (x2 > canvasWidth) {
+				myParent.println(x1,x2, y1, y2);
 				float newX2 = canvasWidth;
 				float newY2 = pente * newX2 + reste;
-				drawLine(x1, y1, newX2, newY2, false);
+				drawLine(x1, y1, newX2, newY2, false,false);
 			} else if (y1 > canvasHeight) {
+				myParent.println(x1,x2, y1, y2);
 				float newY1 = canvasHeight;
 				float newX1 = (newY1 - reste) / pente;
-				drawLine(newX1, newY1, x2, y2, false);
+				drawLine(newX1, newY1, x2, y2,false, false);
 			} else if (y2 > canvasHeight) {
+				myParent.println(x1,x2, y1, y2);
 				float newY2 = canvasHeight;
 				float newX2 = (newY2 - reste) / pente;
-				drawLine(x1, y1, newX2, newY2, false);
+				drawLine(x1, y1, newX2, newY2, false,false);
 			} else if (x1 < 0) {
+				myParent.println(x1,x2, y1, y2);
 				float newX1 = 0;
 				float newY1 = pente * newX1 + reste;
-				drawLine(newX1, newY1, x2, y2, false);
+				drawLine(newX1, newY1, x2, y2,false, false);
 			} else if (x2 < 0) {
+				myParent.println(x1,x2, y1, y2);
 				float newX2 = 0;
 				float newY2 = pente * newX2 + reste;
-				drawLine(x1, y1, newX2, newY2, false);
+				drawLine(x1, y1, newX2, newY2, false,false);
 			} else if (y1 < 0) {
+				myParent.println(x1,x2, y1, y2);
 				float newY1 = 0;
 				float newX1 = (newY1 - reste) / pente;
-				drawLine(newX1, newY1, x2, y2, false);
+				drawLine(newX1, newY1, x2, y2, false,false);
 			} else if (y2 < 0) {
+				myParent.println(x1,x2, y1, y2);
 				float newY2 = 0;
 				float newX2 = (newY2 - reste) / pente;
-				drawLine(x1, y1, newX2, newY2, false);
+				drawLine(x1, y1, newX2, newY2, false,false);
+			}else {
+				myParent.println("ERROR : Untreated interpolation ", x1, y1, x2, y2);
 			}
 		}
 	}
@@ -584,7 +601,6 @@ public class Gcoder {
  */
 	public void drawArc(PVector centerPoint, PVector beginPoint, PVector endPoint, float sensRotation,
 			boolean isFirstInstruction) {
-		myParent.println("trigger");
 		centerPoint = new PVector(centerPoint.x * cos(rotateVar) + centerPoint.y * sin(rotateVar), -centerPoint.y * sin(rotateVar) + centerPoint.y *cos(rotateVar));
 		beginPoint = new PVector(beginPoint.x * cos(rotateVar) + beginPoint.y * sin(rotateVar), -beginPoint.y * sin(rotateVar) + beginPoint.y *cos(rotateVar));
 		endPoint = new PVector(endPoint.x * cos(rotateVar) + endPoint.y * sin(rotateVar), -endPoint.y * sin(rotateVar) + endPoint.y *cos(rotateVar));
@@ -907,7 +923,7 @@ public class Gcoder {
 																								// axis
 			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " F"
 					+ Float.toString(speed) + "\n";
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ - morePushOnZ) + "\n";
+//			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ - morePushOnZ) + "\n";
 			output.print(initCommands);
 			output.print("; end of initialization\n");
 			output.print(currentInstructions);

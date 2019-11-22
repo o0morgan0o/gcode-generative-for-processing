@@ -71,6 +71,11 @@ public class GcoderPainting extends Gcoder{
 		
 	}
 	
+	public void reloadColor(PVector col1Pos, PVector col2Pos) {
+		reloadColor(col1Pos);
+		reloadColor(col2Pos);
+	}
+	
 	
 	public void movePenDangerously(float X, float Y) {
 		currentInstructions += "G1 X" + Float.toString(X) + " Y" + Float.toString(Y) + " \n";
@@ -82,14 +87,14 @@ public class GcoderPainting extends Gcoder{
 	}
 	
 	public void mixingPen(PVector colPos) {
-
 		movePenDangerously(colPos.x+5, colPos.y +0 );
 		movePenDangerously(colPos.x+0, colPos.y +5 );
 		movePenDangerously(colPos.x-5, colPos.y +0 );
 		movePenDangerously(colPos.x+0, colPos.y -5 );
 		movePenDangerously(colPos.x+0, colPos.y +0 );
-		
 	}
+	
+	
 	public void cleanUpPen() {
 		
 	}
