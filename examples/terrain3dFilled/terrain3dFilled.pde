@@ -1,3 +1,11 @@
+/**
+* part of the example files of the gcode-generative-for-processing library
+* show the basics of drawing filled shapes in 3D space. The coordinates of the shapes are interpolated to 2D space.
+* this process is very slow... needs improvements, still Work In Progress 
+* Morgan Thibert - Novembre 2019
+* morgan.thibert@protonmail.com
+*/
+
 import geomerative.*;
 import gcode.generative.*;
 
@@ -8,8 +16,18 @@ GcodeRectMesh m;
 
 
 void setup() {
-    size(800, 800, P2D);
-    g = new Gcoder(this, "output", 300, 300, 2.5, 110, 35, 180, 255); 
+    size(1200,1200, P3D);
+    
+    g=new Gcoder(this,  // necessary
+    "output.gcode",  	// name of the output file
+    300,				// Physical Limit of the printer on X (300mm for cr10)
+    300,				// Physical Limit of the printer on Y (300mm for cr10)
+    2.5,				// Z offset between drawing position and moving position
+    100,				// X position of the sheet (beginning of the drawing)
+    25,					// Y position of the sheet (beginning of the drawing)
+    180,				// width of the sheet
+    250);				// height of the sheet
+	
 
     RG.init(this);
     RG.setPolygonizer(RG.ADAPTATIVE);
@@ -91,7 +109,7 @@ void draw() {
     g.drawRShape(rfinal);
 
     g.drawRect(0, 0, g.canvasWidth, g.canvasHeight);
-   g.show();
+	   g.show();
     g.writeToFile();
     noLoop();
 }

@@ -4,6 +4,12 @@ import java.util.ArrayList;
 
 import processing.core.PVector;
 
+/**
+ * The BezierQuad class contains all the BezierPoints of the bezier curve.
+ * 
+ * @author Morgan Thibert
+ *
+ */
 public class BezierQuad {
 	Gcoder gcoder;
 	ArrayList<BezierPoints> points;
@@ -11,17 +17,15 @@ public class BezierQuad {
 	public BezierPoints lastBezierPoint;
 	public PVector lastPoint;
 	public boolean showControlPoints = false;
-	// 0.01 are OK
-	
 
 	/**
 	 * 
 	 * @param _gcoder
-	 * @param pt1
-	 * @param pt2
-	 * @param pt3
-	 * @param pt4
-	 * @param _resolution
+	 * @param pt1 first Point
+	 * @param pt2 second Point
+	 * @param pt3 third Point
+	 * @param pt4 fourth Point
+	 * @param _resolution must be between 0 and 1. 0.1 is fast but not very beautiful, 0.01 is better but slower.
 	 */
 	public BezierQuad(Gcoder _gcoder, PVector pt1, PVector pt2, PVector pt3, PVector pt4, double _resolution) {
 		gcoder = _gcoder;
@@ -29,9 +33,7 @@ public class BezierQuad {
 		BezierPoints origin = new BezierPoints(pt1, pt2, pt3, pt4, gcoder);
 		points.add(origin);
 		if(gcoder.guiEnabled == true) {
-//			myParent.println(gcoder.cp5.getController("cc"))
 			resolution = gcoder.cp5.getController("ccResolution").getValue();
-//			resolution = (double)0.1;
 		}else {
 			resolution = _resolution;
 		}
@@ -110,12 +112,9 @@ public class BezierQuad {
 	/**
 	 * 
 	 */
-	public void draw() {
-		
+	public void show() {
 		
 		BezierPoints bezierPoint;
-//		System.out.println("drawing a Bezier line ...");
-
 		boolean isFirstInstruction = true;
 		for (int i = 0; i < points.size(); i++) {
 			boolean isLastInstruction = false; // necessaire pour finir l'arc lorsqu'on fait le dernier point

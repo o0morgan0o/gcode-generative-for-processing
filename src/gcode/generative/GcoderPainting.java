@@ -21,13 +21,14 @@ public class GcoderPainting extends Gcoder{
 	public PVector color2 = new PVector(70,227);
 	public PVector color3 = new PVector(70,189);
 	public PVector color4 = new PVector(70,151);
+	public PVector color5 = new PVector(70,113);
 	public PVector water;
 	float speed = 8000;
 	
 	
 
-	public GcoderPainting(PApplet theParent, String _outputFile, float _amplitudeOnZ, float _canvasWidth, float _canvasHeight) {
-		super(theParent, _outputFile, 300, 300, _amplitudeOnZ, 150, 35,
+	public GcoderPainting(PApplet theParent, String _outputFile, float _PHYSICALLIMITX, float _PHYSICALLIMITY, float _amplitudeOnZ,float _canvasOriginX, float _canvasOriginY, float _canvasWidth, float _canvasHeight) {
+		super(theParent, _outputFile, _PHYSICALLIMITX, _PHYSICALLIMITY, _amplitudeOnZ, _canvasOriginX, _canvasOriginY,
 				_canvasWidth, _canvasHeight);
 		// TODO Auto-generated constructor stub
 	}
@@ -39,7 +40,12 @@ public class GcoderPainting extends Gcoder{
 		highZ = _highZ;
 	}
 	
-	public void defineColorPosition(PVector _col1Pos) {
+	public void defineColorsPosition(PVector[] colPos) {
+		color1 = colPos[0];
+		color2 = colPos[1];
+		color3 = colPos[2];
+		color4 = colPos[3];
+		color5 = colPos[4];
 //	public void defineColorPosition(PVector _col1Pos, PVector _col2Pos, PVector _col3Pos, PVector _col4Pos, PVector _waterPos) {
 //		col1Pos = _col1Pos;
 //		col2Pos = _col2Pos;
@@ -58,8 +64,6 @@ public class GcoderPainting extends Gcoder{
 		movePenDangerously(colPos.x, colPos.y);
 		elevatePenCustom(reloadZ);
 		
-		// add water
-		
 
 		if(mix) {
 			mixingPen(colPos);
@@ -68,8 +72,6 @@ public class GcoderPainting extends Gcoder{
 		cleanUpPen();
 		elevatePenCustom(highZ);
 		comingFromReload = true;
-//		movePenDangerously(super.canvasOriginX, super.canvasOriginY);
-//		movePenTo(returnX, returnY,0,0);
 
 
 		
@@ -131,7 +133,7 @@ public class GcoderPainting extends Gcoder{
 		if(X >= 0 && X <= canvasWidth && Y >=0 && Y < canvasHeight) {
 			canvas.beginDraw();
 			canvas.stroke(0);
-			float myStroke = myParent.map(offset, -amplitudeOnZ, amplitudeOnZ, 10, 1);
+			float myStroke = myParent.map(offset, -5, 5, 10, 1);
 			canvas.strokeWeight(myStroke);
 			canvas.point(offsetProcessingDrawingX +canvasOriginX +  X, offsetProcessingDrawingY +canvasOriginY+ Y);
 			canvas.strokeWeight(1);

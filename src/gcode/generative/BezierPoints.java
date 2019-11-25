@@ -5,16 +5,22 @@ import java.lang.Math;
 
 import processing.core.PVector;
 
+/**
+ * 
+ * @author Morgan Thibert
+ *
+ */
 public class BezierPoints {
 	public ArrayList<PVector> points;
 	Gcoder gcoder;
 
 	/**
+	 * The BezierPoints class store 4 control points necessary to define a quadratic bezierCurve
 	 * 
-	 * @param pt1
-	 * @param pt2
-	 * @param pt3
-	 * @param pt4
+	 * @param pt1 first Control point
+	 * @param pt2 second Control point
+	 * @param pt3 third Control point
+	 * @param pt4 fourth Control point
 	 * @param _gcoder
 	 */
 	public BezierPoints(PVector pt1, PVector pt2, PVector pt3, PVector pt4, Gcoder _gcoder) {
@@ -27,6 +33,7 @@ public class BezierPoints {
 	}
 
 	/**
+	 * Used for interpolation of a bezier curve to several arcs. The double t factor goes from 0 to 1 and the result is a PVector which defines the position of the calculated point.
 	 * 
 	 * @param P0
 	 * @param P1
@@ -43,9 +50,11 @@ public class BezierPoints {
 
 		PVector result = new PVector((float) Px, (float) Py);
 		return result;
-
 	}
 	
+	/**
+	 * Apply the translate or rotate functions if there is a pushMatrix or popMatrix
+	 */
 	public void applyPushMatrix() {
 		for(int i = 0 ; i < points.size(); i++) {
 			PVector p = points.get(i);
@@ -59,6 +68,7 @@ public class BezierPoints {
 	}
 
 	/**
+	 * Draw the bezier curve on the processing sketch
 	 * 
 	 * @param showControlPoints
 	 */
