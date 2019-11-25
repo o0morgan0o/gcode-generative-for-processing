@@ -21,6 +21,8 @@ You will need:
 -> Basic knowledge of Processing.
 -> Print the penHolder which is in the "stl files" folder. This is in 2 parts. you will need to some screws and nuts. And the ensemble need to be fixed to the extruder the best you can. Here is my setup on the CR10.
 Of course you can print your own penHolder for better fit with your 3D Printer model.
+
+
 ![holder1](./img/holder1.jpg)
 ![holder2](./img/holder2.jpg)
 ![holder3](./img/holder3.jpg)
