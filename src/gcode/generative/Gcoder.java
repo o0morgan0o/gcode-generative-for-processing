@@ -271,6 +271,7 @@ public class Gcoder {
 	public void customGcode(String beginGcode, String endGcode) {
 		// a implementer
 	}
+	
 
 	/**
 	 * 
@@ -355,17 +356,13 @@ public class Gcoder {
 	 * 
 	 * @param _pushFactor value in mm. Must be between -1 and 1 mm.
 	 */
-	public void addMorePush(float _pushFactor) {
-		if (_pushFactor > 1) {
+	public void adjustPaintingZ(float _pushFactor) {
+		if (_pushFactor < -3) {
 			System.out.println(
 					"Error addMorePush => Far too much pressure, could be dangerous for your printer. please stay between 0 and 1mm. Command ignored \n");
 			return;
 		}
-		if (_pushFactor < -1) {
-			System.out.println("Error addMorePush => pushFactor must be >1mm");
-			return;
-		}
-		morePushOnZ = _pushFactor;
+		additionalLiftOnZ += _pushFactor;
 	}
 
 	/**
@@ -455,7 +452,7 @@ public class Gcoder {
 			x2 += translateVarX;
 			y1 += translateVarY;
 			y2 += translateVarY;
-			myParent.println("after matrix : ", x1, y1, x2, y2);
+//			myParent.println("after matrix : ", x1, y1, x2, y2);
 			drawLine(x1, y1, x2, y2, false, optimize);
 		
 	}
@@ -652,7 +649,7 @@ public class Gcoder {
 		} else if (sensRotation < 0) {
 			isClockwise = false;
 		} else {
-			System.out.println("error, can't draw arc, must draw line");
+			System.out.println("will draw a line instead of arc...");
 		}
 		if (isFirstInstruction) {
 			elevatePen();
@@ -697,8 +694,6 @@ public class Gcoder {
 				break;
 		}
 			previousZ = Zresult;
-			myParent.println("Zresult, ", Zresult);
-//			currentInstructions += "toggle \n";
 
 		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ + Zresult) + "\n";
 		currentZ = additionalLiftOnZ + Zresult;
@@ -978,10 +973,12 @@ public class Gcoder {
 	public void writeToFile() {
 		DecimalFormat decimalFormat = new DecimalFormat("#0");
 		myParent.fill(255, 0, 0);
+		/* part used to show the limits of the sketch. If think it is not useful any more.
 		myParent.text("MinX = " + decimalFormat.format(minX) + " // MaxX = " + decimalFormat.format(maxX),
 				offsetProcessingDrawingX + PHYSICALLIMITX + 100, 40);
 		myParent.text("MinY = " + decimalFormat.format(minY) + " // MaxY = " + decimalFormat.format(maxY),
 				offsetProcessingDrawingX + PHYSICALLIMITX + 100, 60);
+		*/
 		File file = new File(myParent.sketchPath() + "\\" + outputFile + ".gcode");
 		try {
 			output = new PrintWriter(file);

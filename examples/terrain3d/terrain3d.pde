@@ -27,7 +27,7 @@ void setup() {
 
     canvas = createGraphics((int)g.canvasWidth,(int)g.canvasHeight, P3D); // we will first draw the mesh in a separate PGraphics
 
-    g.addMorePush(.2); // used in order to add some pression to the pen during the drawing. (value in mm)
+    g.adjustPaintingZ(-.2); // used in order to add some pression to the pen during the drawing. (value in mm)
 
     m = new GcodeRectMesh(g, this, canvas, new PVector(0, 0, 0), 200,200, 20,20); 
     // pvector(0,0,0) is the position of the pshape
@@ -51,5 +51,3 @@ void setup() {
     g.show();
     g.writeToFile(); // write gcode instructions into file
 }
-
-

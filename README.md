@@ -110,6 +110,20 @@ Visual representation:
 ![bezier Curve](./img/bezier.jpg)
 
 
+## Other useful functions
+
+```java
+// Make more pression on the pen during the printing (here -.2 mm means the painting distance on Z is .2mm lower => so it add pressure to the pen)
+g.adjustPaintingZ(-.2);
+
+// adjust the speed of drawing and deplacement (the speed must be in mm/min)
+g.setSpeed(2400); 
+
+// write a "calibration" gcode file. this file is useful to set up your pen.
+// Use this file to set up your pen.
+g.writeCalibrationGcode();
+```
+
 
 ## Usage with Geomerative
 
