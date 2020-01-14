@@ -35,8 +35,8 @@ public class Gcoder {
 	public float PHYSICALLIMITY;
 
 	//
-	public float amplitudeOnZ;
-	public float additionalLiftOnZ;
+	public float neutralOffsetZ;
+	public float contactZ;
 	public float morePushOnZ = 0;
 
 	//
@@ -91,7 +91,7 @@ public class Gcoder {
 	 *                        the CR10)
 	 * @param _PHYSICALLIMITY the physical maximum y of the printer ( = 300 mm for
 	 *                        the CR10)
-	 * @param _amplitudeOnZ   the z amplitude during the elevation or the descent of
+	 * @param _neutralOffsetZ   the z amplitude during the elevation or the descent of
 	 *                        the pen
 	 * @param _canvasOriginX  the origin X of the sketch on the printer
 	 * @param _canvasOriginY  the origin Y of the sketch on the printer
@@ -99,7 +99,7 @@ public class Gcoder {
 	 * @param _canvasHeight   the height of the printing sketch
 	 */
 	public Gcoder(PApplet theParent, String _outputFile, float _PHYSICALLIMITX, float _PHYSICALLIMITY,
-			float _amplitudeOnZ, float _additionalLiftOnZ, float _canvasOriginX, float _canvasOriginY,
+			float _neutralOffsetZ, float _contactOffsetZ, float _canvasOriginX, float _canvasOriginY,
 			float _canvasWidth, float _canvasHeight) {
 
 		guiEnabled= false;
@@ -110,8 +110,8 @@ public class Gcoder {
 		outputFile = _outputFile;
 		PHYSICALLIMITX = _PHYSICALLIMITX;
 		PHYSICALLIMITY = _PHYSICALLIMITY;
-		amplitudeOnZ = _amplitudeOnZ;
-		additionalLiftOnZ = _additionalLiftOnZ;
+		neutralOffsetZ = _neutralOffsetZ;
+		contactZ = _contactOffsetZ;
 		canvasOriginX = _canvasOriginX;
 		canvasOriginY = _canvasOriginY;
 		canvasWidth = _canvasWidth;
@@ -346,7 +346,7 @@ public class Gcoder {
 	 * @param _amplitudeOnZ the new amplitude in mm
 	 */
 	public void setAmplitudeOnZ(float _amplitudeOnZ) {
-		amplitudeOnZ = _amplitudeOnZ;
+		neutralOffsetZ = _amplitudeOnZ;
 	}
 
 	/**
@@ -362,7 +362,7 @@ public class Gcoder {
 					"Error addMorePush => Far too much pressure, could be dangerous for your printer. please stay between 0 and 1mm. Command ignored \n");
 			return;
 		}
-		additionalLiftOnZ += _pushFactor;
+		contactZ += _pushFactor;
 	}
 
 	/**
@@ -375,8 +375,14 @@ public class Gcoder {
 	 */
 	public void drawRect(float x, float y, float w, float h) {
 		drawLine(x, y, x + w, y);
+		elevatePen();
+		lowerPen();
 		drawLine(x + w, y, x + w, y + h);
+		elevatePen();
+		lowerPen();
 		drawLine(x + w, y + h, x, y + h);
+		elevatePen();
+		lowerPen();
 		drawLine(x, y + h, x, y);
 
 //	    if(fillRectangles){
@@ -667,9 +673,9 @@ public class Gcoder {
 	 * 
 	 */
 	public void elevatePen() {
-		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n";
-		previousZ = amplitudeOnZ;
-		currentZ = additionalLiftOnZ + amplitudeOnZ;
+		currentInstructions += "G0 Z" + Float.toString(contactZ + neutralOffsetZ) + "\n";
+		previousZ = neutralOffsetZ;
+		currentZ = contactZ + neutralOffsetZ;
 	}
 	
 
@@ -695,8 +701,8 @@ public class Gcoder {
 		}
 			previousZ = Zresult;
 
-		currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ + Zresult) + "\n";
-		currentZ = additionalLiftOnZ + Zresult;
+		currentInstructions += "G0 Z" + Float.toString(contactZ + Zresult) + "\n";
+		currentZ = contactZ + Zresult;
 	}
 	public void lowerPen() {
 		lowerPen("IGNORED");
@@ -849,7 +855,7 @@ public class Gcoder {
 
 		if(drawingStyle == "ASCENT") {
 			if(isDrawing) {
-				currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y) + " Z" + Float.toString(additionalLiftOnZ + ZCurling) + "\n";
+				currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y) + " Z" + Float.toString(contactZ + ZCurling) + "\n";
 //				currentInstructions += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + " \n";
 			}else {
 				currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y) + "\n";
@@ -858,7 +864,7 @@ public class Gcoder {
 //			currentZ = additionalLiftOnZ + ZCurling;
 		}else if(drawingStyle == "DESCENT") {
 			if(isDrawing) {
-				currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y) + " Z" + Float.toString(additionalLiftOnZ) + "\n";
+				currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y) + " Z" + Float.toString(contactZ) + "\n";
 //				elevatePen();
 			}else {
 				currentInstructions += "G1 X" + Float.toString(canvasOriginX + x) + " Y" + Float.toString(canvasOriginY + y) + "\n";
@@ -983,11 +989,11 @@ public class Gcoder {
 		try {
 			output = new PrintWriter(file);
 			String initCommands = "";
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ ) + "\n"; // additional lift on Z
+			initCommands += "G0 Z" + Float.toString(contactZ + neutralOffsetZ ) + "\n"; // additional lift on Z
 																								// axis
 			initCommands += "G28\n"; // Auto Home
 			initCommands += "G90\n"; // Set absolute positionning
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n"; // additional lift on Z
+			initCommands += "G0 Z" + Float.toString(contactZ + neutralOffsetZ) + "\n"; // additional lift on Z
 																								// axis
 			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " F"
 					+ Float.toString(speed) + "\n";
@@ -997,7 +1003,7 @@ public class Gcoder {
 			output.print(currentInstructions);
 			output.print("; ending commands\n");
 			String endCommands = "";
-			endCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ + 20) + "\n"; // elevatepen last time
+			endCommands += "G0 Z" + Float.toString(contactZ + neutralOffsetZ + 20) + "\n"; // elevatepen last time
 			endCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " \n"; 
 			endCommands += "G28\n";
 			endCommands += "M84\n";
@@ -1038,11 +1044,11 @@ public class Gcoder {
 			// The calibration file is a gcode file which just draw in the air the limits of
 			// the canvas, then go to the origin point at the printing z. So that the pen
 			// can be setup at this point.
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n"; // additional lift on Z
+			initCommands += "G0 Z" + Float.toString(contactZ + neutralOffsetZ) + "\n"; // additional lift on Z
 																								// axis
 			initCommands += "G28\n"; // Auto Home
 			initCommands += "G90\n"; // Set absolute positionning
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + amplitudeOnZ) + "\n"; // additional lift on Z
+			initCommands += "G0 Z" + Float.toString(contactZ + neutralOffsetZ) + "\n"; // additional lift on Z
 																								// axis
 			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " F"
 					+ Float.toString(speed) + "\n";
@@ -1053,7 +1059,7 @@ public class Gcoder {
 			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY + canvasHeight)
 					+ "\n";
 			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + "\n";
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ) + "\n";
+			initCommands += "G0 Z" + Float.toString(contactZ) + "\n";
 			output.print(initCommands);
 			output.print("; Ready for calibration\n");
 			String endCommands = "";

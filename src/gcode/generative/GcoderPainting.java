@@ -88,7 +88,7 @@ public class GcoderPainting extends Gcoder{
 	}
 
 	public void elevatePenCustom(float Z) {
-		currentInstructions += "G0 Z" + Float.toString(Z + additionalLiftOnZ) + "\n";
+		currentInstructions += "G0 Z" + Float.toString(Z + contactZ) + "\n";
 		previousZ = Z;
 	}
 	
@@ -140,7 +140,7 @@ public class GcoderPainting extends Gcoder{
 			canvas.endDraw();
 			elevatePenCustom(highZ);
 			movePenTo(X, Y, 0,0);
-			currentInstructions+= "G0 Z" + Float.toString(additionalLiftOnZ + offset) + " \n"; 
+			currentInstructions+= "G0 Z" + Float.toString(contactZ + offset) + " \n"; 
 			elevatePen();
 		}else {
 			myParent.println("ERROR Point outside limits");
@@ -187,11 +187,11 @@ public class GcoderPainting extends Gcoder{
 			output = new PrintWriter(file);
 			String initCommands = "";
 			initCommands += "G0 F" + Float.toString(speed) + " \n";
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + highZ) + "\n"; // additional lift on Z
+			initCommands += "G0 Z" + Float.toString(contactZ + highZ) + "\n"; // additional lift on Z
 																								// axis
 			initCommands += "G28\n"; // Auto Home
 			initCommands += "G90\n"; // Set absolute positionning
-			initCommands += "G0 Z" + Float.toString(additionalLiftOnZ + highZ) + "\n"; // additional lift on Z
+			initCommands += "G0 Z" + Float.toString(contactZ + highZ) + "\n"; // additional lift on Z
 																								// axis
 			initCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " F"
 					+ Float.toString(speed) + "\n";
@@ -200,7 +200,7 @@ public class GcoderPainting extends Gcoder{
 			output.print(currentInstructions);
 			output.print("; ending commands\n");
 			String endCommands = "";
-			endCommands += "G0 Z" + Float.toString(additionalLiftOnZ + highZ ) + "\n"; // elevatepen last time
+			endCommands += "G0 Z" + Float.toString(contactZ + highZ ) + "\n"; // elevatepen last time
 			endCommands += "G1 X" + Float.toString(canvasOriginX) + " Y" + Float.toString(canvasOriginY) + " \n"; 
 			endCommands += "G28\n";
 			endCommands += "M84\n";
