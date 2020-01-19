@@ -81,6 +81,10 @@ public class Gcoder {
 	public float cc4;
 	public boolean ccSave;
 	CheckBox saveGcode;
+	
+	private int[] strokeColor = {0,0,0};
+	private float strokeWeight = 1;
+
 
 	/**
 	 * The constructor for initialization of the library.
@@ -462,6 +466,16 @@ public class Gcoder {
 			drawLine(x1, y1, x2, y2, false, optimize);
 		
 	}
+	
+	public void strokeWeight(float sw) {
+		strokeWeight = sw;
+	}
+
+	public void strokeColor(int r, int g , int b) {
+		strokeColor[0] = r;
+		strokeColor[1] = g;
+		strokeColor[2] = b;
+	}
 
 	public void drawLine(float x1, float y1, float x2, float y2, boolean applyTransformations, boolean optimize) {
 		//limit Point don't draw if point of origin is the same as the point of destination
@@ -508,8 +522,8 @@ public class Gcoder {
 			canvas.beginDraw();
 			canvas.pushMatrix();
 			canvas.translate(offsetProcessingDrawingX + canvasOriginX, offsetProcessingDrawingY + canvasOriginY);
-			canvas.stroke(0);
-			canvas.strokeWeight(1);
+			canvas.stroke(strokeColor[0], strokeColor[1], strokeColor[2]);
+			canvas.strokeWeight(strokeWeight);
 			canvas.line(x1, y1, x2, y2);
 			canvas.popMatrix();
 			canvas.endDraw();
