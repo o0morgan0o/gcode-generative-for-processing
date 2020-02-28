@@ -394,7 +394,7 @@ public class Gcoder {
 //	        for (int i = 0 ; i < ( w) ; i++ ){
 //	            //il faut calculer l'e
 //	            // drawLine(min(x+i, x+w), y , x ,min(y+i, y+h));
-//	            // float newX = crop()
+	            // float newX = crop()
 //	            // drawLine(x+i, y , x ,min(y+i, y+h));
 //	        }
 //

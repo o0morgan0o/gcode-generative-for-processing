@@ -12,6 +12,17 @@ This library was designed for usage with the Creality CR10. I haven't yet tested
 
 ***This library is still WorkInProgress. The functions and usage will probably be updated and adjusted in the future.***
 
+
+## Installation
+
+This repo contains the source code of the library.
+The compiled library for installation is here (clone the repo of the link to your processing library folder):
+https://github.com/o0morgan0o/gcodeGenerative
+
+*In linux the library location is usually in  ~/sketcbook/libraries/*
+*In windows the library location is usually in C:/Users/{User}/Documents/Processing/libraries*
+
+
 ## Pre-requisites
 
 This library aims at transferring processing code to gcode instructions so that it can be send to 3D Printer in order to draw creative coding directly like a pen plotter.

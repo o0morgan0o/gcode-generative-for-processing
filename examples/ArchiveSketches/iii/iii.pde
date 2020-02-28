@@ -74,8 +74,10 @@ void setup() {
     // println("////////////////////////");
     // println(b-a);
     // println("////////////////////////");
-    // g.drawRShape(rfinal); // Convert and draw lines to gcode instructions
-    // g.writeToFile(); // write GCode
+   
+     g.drawRShape(rfinal); // Convert and draw lines to gcode instructions
+   g.show();
+     g.writeToFile(); // write GCode
 
 
 }
